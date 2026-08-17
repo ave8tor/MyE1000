@@ -1,0 +1,2637 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyE1000 TOLD Calculator</title>
+
+    <!-- PWA & iPad Web App Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="E1000 TOLD">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Link to App Manifest and Icon -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png"> <!-- You will need a 192x192 PNG named icon.png in the same folder -->
+
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-color: #38bdf8;
+            --accent-hover: #0284c7;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+            min-height: 100vh;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 16px;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            color: var(--accent-color);
+            letter-spacing: 0.5px;
+        }
+
+        .header h2 {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 20px;
+            height: fit-content;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            background-color: #0f172a;
+            border: 1px solid var(--card-border);
+            border-radius: 6px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-color);
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 12px;
+            background-color: #0f172a;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--card-border);
+        }
+
+        .radio-group label {
+            margin: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-main);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 8px 0;
+        }
+
+        .checkbox-group input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent-color);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--accent-color);
+            color: #0f172a;
+            font-weight: 700;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        /* Tabs Navigation */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 12px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            cursor: pointer;
+            padding: 10px 16px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            background: var(--card-bg);
+            color: var(--accent-color);
+            border: 1px solid var(--card-border);
+            font-weight: 600;
+        }
+
+        .tab-btn:hover:not(.active) {
+            color: var(--text-main);
+            background: var(--card-border);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Updated Tab Layout for Modals */
+        .tab-layout {
+            display: flex;
+            justify-content: center;
+        }
+
+        .tab-layout > .card:nth-child(1) {
+            width: 100%;
+            max-width: 500px; /* Centers and constrains the input forms */
+        }
+
+        .tab-layout > .card:nth-child(2) {
+            display: none; /* Hides the inline result cards */
+        }
+
+        @media (max-width: 850px) {
+            .tab-layout {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #33415555;
+            font-size: 0.9rem;
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: var(--text-muted);
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .badge-emerg {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+
+        .alert-banner {
+            background-color: rgba(239, 68, 68, 0.15);
+            border: 1px solid var(--danger-color);
+            color: #fca5a5;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        table.cruise-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+
+        table.cruise-table th, table.cruise-table td {
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        table.cruise-table th {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .section-header {
+            font-size: 0.95rem; 
+            color: var(--text-muted); 
+            margin: 15px 0 10px 0;
+            border-bottom: 1px solid #33415555;
+            padding-bottom: 4px;
+            text-align: center;
+            padding-top: 2px;
+            font-weight: bold;
+        }
+
+        .section-header-emerg {
+            font-size: 0.95rem; 
+            color: var(--danger-color);
+            margin: 15px 0 10px 0;
+            border-bottom: 1px solid #33415555;
+            padding-bottom: 4px;
+            text-align: center;
+            padding-top: 2px;
+            font-weight: bold;
+        }
+
+        .section-alert {
+            font-size: 0.95rem; 
+            color: var(--danger-color);
+            margin: 15px 0 10px 0;
+            /* border-bottom: 1px solid #33415555; */
+            padding-bottom: 4px;
+            text-align: center;
+            padding-top: 2px;
+            font-weight: bold;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--card-border);
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--card-border);
+            color: var(--text-main);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.85);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--accent-color);
+            border-radius: 10px;
+            padding: 24px;
+            width: 90%;
+            max-width: 550px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px; right: 20px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: var(--danger-color);
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <h1>MyE1000</h1>
+        <h2>Takeoff and Landing Data (TOLD) Calculator</h2>
+    </header>
+
+    <!-- Tabbed Navigation -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('tab-power')" id="btn-power">Power Settings</button>
+        <button class="tab-btn" onclick="switchTab('tab-takeoff')" id="btn-takeoff">Takeoff Data</button>
+        <button class="tab-btn" onclick="switchTab('tab-climb')" id="btn-climb">Climb Data</button>
+        <button class="tab-btn" onclick="switchTab('tab-cruise')" id="btn-cruise">Cruise Data</button>
+        <button class="tab-btn" onclick="switchTab('tab-landing')" id="btn-landing">Landing Data</button>
+    </div>
+
+    <!-- TAB: Power Settings -->
+    <div id="tab-power" class="tab-content active">
+        <div class="tab-layout">
+            <div class="card">
+                <div class="card-title">Power Settings</div>
+                <div id="pwr-error" class="alert-banner"></div>
+                <div class="form-group">
+                    <label for="pwr-alt">Altitude (ft)</label>
+                    <select id="pwr-alt" class="form-control" onchange="syncInput('pwrAlt', this.value)"></select>
+                </div>
+                <div class="form-group">
+                    <label for="pwr-oat">OAT (°C)</label>
+                    <select id="pwr-oat" class="form-control" onchange="syncInput('pwrOAT', this.value)"></select>
+                </div>
+                <div class="form-group">
+                    <label for="pwr-rpm">Propeller RPM (%)</label>
+                    <select id="pwr-rpm" class="form-control" onchange="syncInput('propRPM', this.value)"></select>
+                </div>
+
+                <button type="button" class="btn" onclick="calculatePower()">Get Power Settings</button>
+                <button type="button" class="btn btn-secondary" onclick="resetTab('tab-power')">Reset Fields</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Power Settings</div>
+                <div id="pwr-warning" class="alert-banner"></div>
+                <div class="results-grid">
+                    <div>
+                        <div class="section-header">Parameters</div>
+                        <div class="metric-row">
+                            <span class="metric-label">Altitude:</span>
+                            <span class="metric-value" id="res-pwr-alt">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">OAT:</span>
+                            <span class="metric-value" id="res-pwr-oat">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">ISA:</span>
+                            <span class="metric-value" id="res-pwr-isa">--</span>
+                        </div>
+
+                        <div class="section-header">Takeoff Power (1700 rpm)</div>
+                        <div class="metric-row">
+                            <span class="metric-label">Torque:</span>
+                            <span class="metric-value" id="res-pwr-to">--</span>
+                        </div>
+
+                        <div class="section-header">Climb Power (1700 rpm) </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Torque:</span>
+                            <span class="metric-value" id="res-pwr-climb">--</span>
+                        </div>
+
+                        <div class="section-header" id="res-pwr-prop">Cruise Power</div>
+                        <div class="metric-row">
+                            <span class="metric-label">Maximum Cruise Torque:</span>
+                            <span class="metric-value" id="res-pwr-max">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Normal Cruise Torque:</span>
+                            <span class="metric-value" id="res-pwr-norm">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Economy Cruise Torque:</span>
+                            <span class="metric-value" id="res-pwr-econ">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: Takeoff Data -->
+    <div id="tab-takeoff" class="tab-content">
+        <div class="tab-layout">
+            <div class="card">
+                <div class="card-title">Takeoff Parameters</div>
+                <div id="to-error" class="alert-banner"></div>
+                <div class="form-group">
+                    <label for="to-weight">Aircraft Weight (lbs)</label>
+                    <select id="to-weight" class="form-control" onchange="syncInput('weight', this.value)"></select>
+                </div>
+                <div class="form-group">
+                    <label for="to-alt">Departure Altitude (ft)</label>
+                    <select id="to-alt" class="form-control" onchange="syncInput('startAlt', this.value)"></select>
+                </div>
+                <div class="form-group">
+                    <label for="to-oat">Departure OAT (°C)</label>
+                    <select id="to-oat" class="form-control" onchange="syncInput('startOAT', this.value)"></select>
+                </div>
+                <div class="form-group">
+                    <label for="to-windDir">Wind Direction (°)</label>
+                    <select id="to-windDir" class="form-control" onchange="syncInput('windDir', this.value)"></select>
+                </div>
+                <div class="form-group">
+                    <label for="to-windSpeed">Wind Speed (kts)</label>
+                    <select id="to-windSpeed" class="form-control" onchange="syncInput('windSpeed', this.value)"></select>
+                </div>
+                <div class="form-group">
+                    <label for="to-course">Runway Heading (°)</label>
+                    <select id="to-course" class="form-control" onchange="syncInput('course', this.value)"></select>
+                </div>
+                <div class="form-group">
+                    <label for="to-slope">Runway Slope (%)</label>
+                    <select id="to-slope" class="form-control" onchange="syncInput('slope', this.value)"></select>
+                </div>
+                <div class="form-group">
+                    <label>Runway Condition</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="to-cond" value="D" checked onchange="syncInput('cond', this.value)"> Dry</label>
+                        <label><input type="radio" name="to-cond" value="W" onchange="syncInput('cond', this.value)"> Wet</label>
+                        <label><input type="radio" name="to-cond" value="I" onchange="syncInput('cond', this.value)"> Icy</label>
+                    </div>
+                </div>
+                <button type="button" class="btn" onclick="calculateTakeoff()">Calculate Takeoff</button>
+                <button type="button" class="btn btn-secondary" onclick="resetTab('tab-takeoff')">Reset Fields</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Takeoff Results</div>
+                <div class="results-grid">
+                    <div>
+                        <div class="section-header">Atmosphere & Winds</div>
+                        <div class="metric-row">
+                            <span class="metric-label">ISA Difference:</span>
+                            <span class="metric-value" id="res-to-isa">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Crosswind:</span>
+                            <span class="metric-value" id="res-to-xwind">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Headwind:</span>
+                            <span class="metric-value" id="res-to-hwind">--</span>
+                        </div>
+
+                        <div class="section-header">Takeoff Power (1700 rpm)</div>
+                        <div class="metric-row">
+                            <span class="metric-label">Torque:</span>
+                            <span class="metric-value" id="takeoff-tq">--</span>
+                        </div>
+                    
+                        <div class="section-header">Flaps T/O</div>
+                        <div class="metric-row">
+                            <span class="metric-label">Ground Roll:</span>
+                            <span class="metric-value" id="res-to-gr">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Clear 50ft Obstacle:</span>
+                            <span class="metric-value" id="res-to-d50">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Accel-Stop (90kts):</span>
+                            <span class="metric-value" id="res-to-astop">--</span>
+                        </div>
+                        
+                        <div class="section-header-emerg">Flaps UP (Emergency)</div>
+                        <div class="metric-row">
+                            <span class="metric-label badge-emerg">Ground Roll:</span>
+                            <span class="metric-value badge-emerg" id="res-up-gr">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label badge-emerg">Clear 50ft Obstacle:</span>
+                            <span class="metric-value badge-emerg" id="res-up-d50">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label badge-emerg">Accel-Stop (95kts):</span>
+                            <span class="metric-value badge-emerg" id="res-up-astop">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: Climb Data -->
+    <div id="tab-climb" class="tab-content">
+        <div class="tab-layout">
+            <div class="card">
+                <div class="card-title">Climb Parameters</div>
+                <div id="cl-error" class="alert-banner"></div>
+
+                <div class="form-group">
+                    <label for="cl-weight">Aircraft Weight (lbs)</label>
+                    <select id="cl-weight" class="form-control" onchange="syncInput('weight', this.value)"></select>
+                </div>
+                <div class="form-group">
+                    <label for="cl-startAlt">Starting Altitude (ft)</label>
+                    <select id="cl-startAlt" class="form-control" onchange="syncInput('startAlt', this.value)"></select>
+                </div>
+                <div class="form-group">
+                    <label for="cl-startOAT">Starting OAT (°C)</label>
+                    <select id="cl-startOAT" class="form-control" onchange="syncInput('startOAT', this.value)"></select>
+                </div>
+                <div class="form-group">
+                    <label for="cl-endAlt">Ending Altitude (ft)</label>
+                    <select id="cl-endAlt" class="form-control" onchange="syncInput('endAlt', this.value)"></select>
+                </div>
+                <div class="form-group">
+                    <label for="cl-endOAT">Ending OAT (°C)</label>
+                    <select id="cl-endOAT" class="form-control" onchange="syncInput('endOAT', this.value)"></select>
+                </div>
+
+                <button type="button" class="btn" onclick="calculateClimb()">Calculate Climb</button>
+                <button type="button" class="btn btn-secondary" onclick="resetTab('tab-climb')">Reset Fields</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Climb Profile</div>
+                <div id="climb-warning" class="alert-banner"></div>
+                <div class="results-grid">
+                    <div>
+                        <div class="section-header">Climb Power (1700 rpm)</div>
+                        <div class="metric-row">
+                            <span class="metric-label">Torque:</span>
+                            <span class="metric-value" id="climb-tq">--</span>
+                        </div>
+
+                        <div class="section-header">Rates</div>
+                        <div class="metric-row">
+                            <span class="metric-label">Starting Rate of Climb:</span>
+                            <span class="metric-value" id="res-climb-sroc">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Ending Rate of Climb:</span>
+                            <span class="metric-value" id="res-climb-eroc">--</span>
+                        </div>
+
+                        <div class="section-header">Totals</div>
+                        <div class="metric-row">
+                            <span class="metric-label">Altitude Difference:</span>
+                            <span class="metric-value" id="res-climb-diff">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Time to Climb:</span>
+                            <span class="metric-value" id="res-climb-time">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Fuel to Climb:</span>
+                            <span class="metric-value" id="res-climb-fuel">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Distance to Climb:</span>
+                            <span class="metric-value" id="res-climb-dist">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: Cruise Data -->
+    <div id="tab-cruise" class="tab-content">
+        <div class="tab-layout">
+            <div class="card">
+                <div class="card-title">Cruise Parameters</div>
+                <div id="cr-error" class="alert-banner"></div>
+
+                <div class="form-group">
+                    <label for="cr-alt">Pressure Altitude (ft)</label>
+                    <select id="cr-alt" class="form-control" onchange="syncInput('endAlt', this.value)"></select>
+                </div>
+                <div class="form-group">
+                    <label for="cr-oat">OAT (°C)</label>
+                    <select id="cr-oat" class="form-control" onchange="syncInput('endOAT', this.value)"></select>
+                </div>
+                <div class="form-group">
+                    <label for="cr-rpm">Propeller (rpm)</label>
+                    <select id="cr-rpm" class="form-control" onchange="syncInput('propRPM', this.value)"></select>
+                </div>
+
+                <button type="button" class="btn" onclick="calculateCruise()">Calculate Cruise</button>
+                <button type="button" class="btn btn-secondary" onclick="resetTab('tab-cruise')">Reset Fields</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Cruise Performance Comparison</div>
+                <div class="results-grid">
+                    <div>
+                        <div class="section-header">Parameters</div>
+                        <div class="metric-row">
+                            <span class="metric-label">ISA:</span>
+                            <span class="metric-value" id="res-cr-isa">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Propeller:</span>
+                            <span class="metric-value" id="res-cr-rpm">--</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="overflow-x: auto;">
+                    <table class="cruise-table">
+                        <thead>
+                            <tr>
+                                <th>Power Setting</th>
+                                <th>Torque (%)</th>
+                                <th>Fuel Flow (gph)</th>
+                                <th>KIAS</th>
+                                <th>KTAS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Max Cruise</strong></td>
+                                <td id="res-max-tq">--</td>
+                                <td id="res-max-ff">--</td>
+                                <td id="res-max-kias">--</td>
+                                <td id="res-max-ktas">--</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Normal Cruise</strong></td>
+                                <td id="res-norm-tq">--</td>
+                                <td id="res-norm-ff">--</td>
+                                <td id="res-norm-kias">--</td>
+                                <td id="res-norm-ktas">--</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Economy Cruise</strong></td>
+                                <td id="res-econ-tq">--</td>
+                                <td id="res-econ-ff">--</td>
+                                <td id="res-econ-kias">--</td>
+                                <td id="res-econ-ktas">--</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: Landing Data -->
+    <div id="tab-landing" class="tab-content">
+        <div class="tab-layout">
+            <div class="card">
+                <div class="card-title">Landing Parameters</div>
+                <div id="ld-error" class="alert-banner"></div>
+
+                <div class="form-group">
+                    <label for="ld-weight">Aircraft Weight (lbs)</label>
+                    <select id="ld-weight" class="form-control" onchange="syncInput('weight', this.value)"></select>
+                </div>
+                <div class="form-group">
+                    <label for="ld-alt">Destination Altitude (ft)</label>
+                    <select id="ld-alt" class="form-control" onchange="syncInput('startAlt', this.value)"></select>
+                </div>
+                <div class="form-group">
+                    <label for="ld-oat">Destination OAT (°C)</label>
+                    <select id="ld-oat" class="form-control" onchange="syncInput('startOAT', this.value)"></select>
+                </div>
+                <div class="form-group">
+                    <label for="ld-windDir">Wind Direction (°)</label>
+                    <select id="ld-windDir" class="form-control" onchange="syncInput('windDir', this.value)"></select>
+                </div>
+                <div class="form-group">
+                    <label for="ld-windSpeed">Wind Speed (kts)</label>
+                    <select id="ld-windSpeed" class="form-control" onchange="syncInput('windSpeed', this.value)"></select>
+                </div>
+                <div class="form-group">
+                    <label for="ld-course">Runway Heading (°)</label>
+                    <select id="ld-course" class="form-control" onchange="syncInput('course', this.value)"></select>
+                </div>
+                <div class="form-group">
+                    <label for="ld-slope">Runway Slope (%)</label>
+                    <select id="ld-slope" class="form-control" onchange="syncInput('slope', this.value)"></select>
+                </div>
+                <div class="form-group">
+                    <label>Runway Condition</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="ld-cond" value="D" checked onchange="syncInput('cond', this.value)"> Dry</label>
+                        <label><input type="radio" name="ld-cond" value="W" onchange="syncInput('cond', this.value)"> Wet</label>
+                        <label><input type="radio" name="ld-cond" value="I" onchange="syncInput('cond', this.value)"> Icy</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="ld-ice"> Pusher Ice Mode Active
+                    </label>
+                </div>
+
+                <button type="button" class="btn" onclick="calculateLanding()">Calculate Landing</button>
+                <button type="button" class="btn btn-secondary" onclick="resetTab('tab-landing')">Reset Fields</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Landing Results</div>
+                <div class="results-grid">
+                    <div>
+                        <div id="overweight-banner"></div>
+                        <div class="section-header">Atmosphere & Winds</div>
+                        <div class="metric-row">
+                            <span class="metric-label">ISA Difference:</span>
+                            <span class="metric-value" id="res-ld-isa">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Crosswind:</span>
+                            <span class="metric-value" id="res-ld-xwind">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Headwind:</span>
+                            <span class="metric-value" id="res-ld-hwind">--</span>
+                        </div>
+                        <div class="section-header" id="header-flaps-full">Flaps FULL</div>
+                        <div class="metric-row">
+                            <span class="metric-label">Ground Roll:</span>
+                            <span class="metric-value" id="res-land-fgr">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Clear 50ft Obstacle:</span>
+                            <span class="metric-value" id="res-land-fd50">--</span>
+                        </div>
+                        <div class="section-header" id="header-flaps-to">Flaps T/O</div>
+                        <div class="metric-row">
+                            <span class="metric-label" id="header-ground-roll">Ground Roll:</span>
+                            <span class="metric-value" id="res-land-togr">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label" id="header-50ft">Clear 50ft Obstacle:</span>
+                            <span class="metric-value" id="res-land-tod50">--</span>
+                        </div>
+                        
+                        <div class="section-header-emerg" id="header-flaps-up">Flaps UP (Emergency)</div>
+                        <div class="metric-row">
+                            <span class="metric-label badge-emerg">Ground Roll:</span>
+                            <span class="metric-value badge-emerg" id="res-land-upgr">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label badge-emerg">Clear 50ft Obstacle:</span>
+                            <span class="metric-value badge-emerg" id="res-land-upd50">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="results-modal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-container" onclick="event.stopPropagation()">
+            <span class="modal-close" onclick="closeModal(event)">&times;</span>
+            <div id="modal-content-area"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- Core Application Logic & Lookup Tables ---
+        const tableTakeoffFLKeys = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130];
+        const tableTakeoffOATKeys = [-25, -24, -22, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 49];
+        const tableFLKeys =  [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300, 310, 320, 330, 340];
+        const tableOATKeys = [-54, -52, -50, -48, -46, -44, -42, -40, -38, -36, -34, -32, -30, -28, -26, -24, -22, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 49];
+        const tableTakeoffPower = [];
+        const tableClimbPower = [];
+        const tableMaxCruisePower = [];
+        const tableNormCruisePower = [];
+        const tableEconCruisePower = [];
+
+        let tableTOPerfTOGR = new Map();
+        let tableTOPerfTOD50 = new Map();
+        let tableTOPerfUPGR = new Map();
+        let tableTOPerfUPD50 = new Map();
+        let tableROC = new Map();
+        let tableTimeToClimb = new Map();
+        let tableFuelToClimb = new Map();
+        let tableDistanceToClimb = new Map();
+        let tableMaxCruisePerformance = new Map();
+        let tableNormalCruisePerformance = new Map();
+        let tableEconomyCruisePerformance = new Map();
+        let tableLandPerfTOGR = new Map();
+        let tableLandPerfTOD50 = new Map();
+        let tableLandPerfFULLGR = new Map();
+        let tableLandPerfFULLD50 = new Map();
+        
+        let cruiseSetting = { 'TQ': 0, 'FF': 1, 'IAS': 2, 'TAS': 3 };
+
+        let startAlt = 0;
+        let startOAT = parseFloat(getISAatALT(startAlt));
+        let endAlt = 34000;
+        let endOAT = parseFloat(getISAatALT(endAlt));
+
+        window.onload = function () {
+            populateWeightPickers();
+            populateAirfieldAltPickers();
+            populateAltitudePickers();
+            populateOATPickers();
+            populateAirfieldOATPickers();
+            populateRPMPickers();
+            populateHeadingPickers();
+            populateSpeedPickers();
+            populateSlopePickers();
+            buildTakeoffPowerTables(tableTakeoffPower);
+            buildClimbPowerTables(tableClimbPower)
+            buildCruisePowerTables(tableMaxCruisePower, tableNormCruisePower, tableEconCruisePower);
+
+            buildTakeoffPerformanceTables(tableTOPerfTOGR, tableTOPerfTOD50, tableTOPerfUPGR, tableTOPerfUPD50);
+            buildRateOfClimbTables(tableROC);
+            buildTimeFuelDistanceTables(tableTimeToClimb, tableFuelToClimb, tableDistanceToClimb);
+            buildMaxCruisePerformanceTables(tableMaxCruisePerformance);
+            buildNormalCruisePerformanceTables(tableNormalCruisePerformance);
+            buildEconomyCruisePerformanceTables(tableEconomyCruisePerformance);
+            buildLandingPerformanceTables(tableLandPerfTOGR, tableLandPerfTOD50, tableLandPerfFULLGR, tableLandPerfFULLD50);
+            
+            // Run initial calculations silently (without showing the modal)
+            // calculateTakeoff(false);
+            // calculateClimb(false);
+            // calculateCruise(false);
+            // calculateLanding(false);
+        };
+
+        // --- Modal Popup Logic ---
+        function showModal(tabId) {
+            let resultCard = document.querySelector(`#${tabId} .card:nth-child(2)`);
+            let modalContent = document.getElementById("modal-content-area");
+            
+            // Clear previous modal content
+            modalContent.innerHTML = "";
+            
+            // Clone the results card
+            let clone = resultCard.cloneNode(true);
+            
+            // Strip IDs from the clone to prevent JS conflicts with the hidden originals
+            let elementsWithIds = clone.querySelectorAll('[id]');
+            elementsWithIds.forEach(el => el.removeAttribute('id'));
+            
+            // Adjust styles for modal display
+            clone.style.display = "block";
+            clone.style.border = "none";
+            clone.style.padding = "0";
+            
+            modalContent.appendChild(clone);
+            
+            // Display the overlay
+            document.getElementById("results-modal").style.display = "flex";
+        }
+
+        function closeModal(e) {
+            if (e) e.stopPropagation();
+            document.getElementById("results-modal").style.display = "none";
+        }
+
+        // --- Tab Navigation Logic ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById(tabId).classList.add('active');
+            let btnId = tabId.replace('tab-', 'btn-');
+            document.getElementById(btnId).classList.add('active');
+        }
+
+        function syncInput(field, val) {
+            if (field === 'pwrAlt') {
+                //set ISA (plus offset) based on selected altitude
+                let isaOffset = parseFloat(convertToISA(endOAT, endAlt));
+                let altISA = parseFloat(getISAatALT(val));
+                let newOAT = altISA + isaOffset;
+
+                document.getElementById("pwr-alt").value = val;
+                document.getElementById("cl-endAlt").value = val;
+                document.getElementById("cr-alt").value = val;
+                
+                //update all associated temps
+                document.getElementById("pwr-oat").value = newOAT.toFixed(0);
+                document.getElementById("cl-endOAT").value = newOAT.toFixed(0);
+                document.getElementById("cr-oat").value = newOAT.toFixed(0);
+                endAlt = val;
+                endOAT = newOAT;
+            } else if (field === 'pwrOAT') {
+                document.getElementById("pwr-oat").value = val;
+                document.getElementById("cl-endOAT").value = val;
+                document.getElementById("cr-oat").value = val;
+                endOAT = val;
+            } else if (field === 'propRPM') {
+                document.getElementById("pwr-rpm").value = val;
+                document.getElementById("cr-rpm").value = val;
+            } else if (field === 'weight') {
+                document.getElementById("to-weight").value = val;
+                document.getElementById("cl-weight").value = val;
+                document.getElementById("ld-weight").value = val;
+            } else if (field === 'startAlt') {
+                //set ISA (plus offset) based on selected altitude
+                let isaOffset = parseFloat(convertToISA(startOAT, startAlt));
+                let altISA = parseFloat(getISAatALT(val));
+                let newOAT = altISA + isaOffset;
+
+                document.getElementById("to-alt").value = val;
+                document.getElementById("cl-startAlt").value = val;
+                document.getElementById("ld-alt").value = val;
+
+                //update all associated temps
+                document.getElementById("to-oat").value = newOAT.toFixed(0);
+                document.getElementById("cl-startOAT").value = newOAT.toFixed(0);
+                document.getElementById("ld-oat").value = newOAT.toFixed(0);
+                startAlt = val;
+                startOAT = newOAT;
+            } else if (field === 'startOAT') {
+                document.getElementById("to-oat").value = val;
+                document.getElementById("cl-startOAT").value = val;
+                document.getElementById("ld-oat").value = val;
+                startOAT = val;
+            } else if (field === 'endAlt') {
+                //set ISA (plus offset) based on selected altitude
+                let isaOffset = parseFloat(convertToISA(endOAT, endAlt));
+                let altISA = parseFloat(getISAatALT(val));
+                let newOAT = altISA + isaOffset;
+
+                document.getElementById("pwr-alt").value = val;
+                document.getElementById("cl-endAlt").value = val;
+                document.getElementById("cr-alt").value = val;
+
+                //update all associated temps
+                document.getElementById("pwr-oat").value = newOAT.toFixed(0);
+                document.getElementById("cl-endOAT").value = newOAT.toFixed(0);
+                document.getElementById("cr-oat").value = newOAT.toFixed(0);
+                endAlt = val;
+                endOAT = newOAT;
+            } else if (field === 'endOAT') {
+                document.getElementById("pwr-oat").value = val;
+                document.getElementById("cl-endOAT").value = val;
+                document.getElementById("cr-oat").value = val;
+                endOAT = val;
+            } else if (field === 'windDir') {
+                document.getElementById("to-windDir").value = val;
+                document.getElementById("ld-windDir").value = val;
+            } else if (field === 'windSpeed') {
+                document.getElementById("to-windSpeed").value = val;
+                document.getElementById("ld-windSpeed").value = val;
+            } else if (field === 'course') {
+                document.getElementById("to-course").value = val;
+                document.getElementById("ld-course").value = val;
+            } else if (field === 'slope') {
+                document.getElementById("to-slope").value = val;
+                document.getElementById("ld-slope").value = val;
+            } else if (field === 'cond') {
+                document.querySelector(`input[name="to-cond"][value="${val}"]`).checked = true;
+                document.querySelector(`input[name="ld-cond"][value="${val}"]`).checked = true;
+            }
+        }
+
+        function resetTab(tabId) {
+            let tab = document.getElementById(tabId);
+            let inputs = tab.querySelectorAll('input[type="number"], select');
+            inputs.forEach(input => {
+                input.value = "0";
+                    if (input.id.includes("weight")) {
+                        if (tabId === "tab-landing") {
+                            input.value = "7600";
+                            syncInput('weight', "7600");
+                        } else {
+                            input.value = "8000";
+                            syncInput('weight', "8000");
+                        }
+                    }
+                    if (input.id === "pwr-rpm" || input.id === "cr-rpm") {
+                        input.value = "1700";
+                        syncInput('propRPM', "1700");
+                    }
+                    if (input.id.includes("pwr-alt")) syncInput('pwrAlt', "0");
+                    if (input.id.includes("pwr-oat")) syncInput('pwrOAT', "0");
+                    if (input.id === "to-alt" || input.id === "cl-startAlt" || input.id === "ld-alt" ) syncInput('startAlt', "0");
+                    if (input.id === "to-oat" || input.id === "cl-startOAT" || input.id === "ld-oat" ) syncInput('startOAT', "0");
+                    if (input.id === "cl-endAlt" || input.id === "cr-alt") syncInput('endAlt', "0");
+                    if (input.id === "cl-endOAT" || input.id === "cr-oat") syncInput('endOAT', "0");
+                    if (input.id.includes("windDir")) syncInput('windDir', "0");
+                    if (input.id.includes("windSpeed")) syncInput('windSpeed', "0");
+                    if (input.id.includes("course")) syncInput('course', "0");
+                    if (input.id.includes("slope")) syncInput('slope', "0");
+                });
+            
+            let pusherIceMode = document.getElementById('ld-ice');
+
+            if (tabId === 'tab-climb' || tabId === 'tab-power') {
+                let allOutputs = document.querySelectorAll('.metric-value');
+                allOutputs.forEach(output => {
+                    output.innerText = "--";
+                });
+                
+                let allTableCells = document.querySelectorAll('td[id^="res-"]');
+                allTableCells.forEach(cell => {
+                    cell.innerText = "--";
+                });
+            } else if (tabId === 'tab-takeoff' || tabId === 'tab-landing') {
+                let takeoffOutputs = document.getElementById('tab-takeoff').querySelectorAll('.metric-value');
+                let climbOutputs = document.getElementById('tab-climb').querySelectorAll('.metric-value');
+                let landingOutputs = document.getElementById('tab-landing').querySelectorAll('.metric-value');
+                
+                [...takeoffOutputs, ...climbOutputs, ...landingOutputs].forEach(output => {
+                    output.innerText = "--";
+                });
+
+                syncInput('cond', 'D');
+                if (tabId === 'tab-landing') {
+                    pusherIceMode.checked = false;
+                }
+            }  else if (tabId === 'tab-cruise') {
+                let climbOutputs = document.getElementById('tab-climb').querySelectorAll('.metric-value');
+                let cruiseOutputs = document.getElementById('tab-cruise').querySelectorAll('.metric-value');
+                
+                [...climbOutputs, ...cruiseOutputs].forEach(output => {
+                    output.innerText = "--";
+                });
+            }
+
+            let errorBanner = tab.querySelector('.alert-banner');
+            if (errorBanner) {
+                errorBanner.style.display = "none";
+            }
+        }
+
+        function isNumeric(str) {
+            if (typeof str != "string") return false;
+            return !isNaN(str) && !isNaN(parseFloat(str));
+        }
+
+        /**
+         * 1D Linear Interpolation
+         */
+        function interpolateLinear(x, x1, x2, y1, y2) {
+            if (x1 === x2) return y1; // Avoid division by zero if bounds are identical
+            return y1 + ((x - x1) * (y2 - y1)) / (x2 - x1);
+        }
+
+        /**
+         * Bilinear Interpolation for a 2D Table
+         * 
+         * @param {number} targetRow - The target Y-Axis value (e.g., OAT)
+         * @param {number} targetCol - The target X-Axis value (e.g., Flight Level)
+         * @param {Array<number>} rowKeys - Array of Y-Axis headers
+         * @param {Array<number>} colKeys - Array of X-Axis headers
+         * @param {Array<Array<number>>} dataMatrix - 2D array of the table values
+         */
+        function getBilinearInterpolation(targetRow, targetCol, rowKeys, colKeys, dataMatrix) {
+            // 1. Find bounding row keys (Temperature)
+            let r1 = rowKeys[0], r2 = rowKeys[rowKeys.length - 1];
+            let r1Index = 0, r2Index = rowKeys.length - 1;
+            
+            for (let i = 0; i < rowKeys.length - 1; i++) {
+                if (targetRow >= rowKeys[i] && targetRow <= rowKeys[i+1]) {
+                    r1 = rowKeys[i];
+                    r2 = rowKeys[i+1];
+                    r1Index = i;
+                    r2Index = i+1;
+                    break;
+                }
+            }
+
+            // 2. Find bounding column keys (Altitude)
+            let c1 = colKeys[0], c2 = colKeys[colKeys.length - 1];
+            let c1Index = 0, c2Index = colKeys.length - 1;
+            
+            for (let i = 0; i < colKeys.length - 1; i++) {
+                if (targetCol >= colKeys[i] && targetCol <= colKeys[i+1]) {
+                    c1 = colKeys[i];
+                    c2 = colKeys[i+1];
+                    c1Index = i;
+                    c2Index = i+1;
+                    break;
+                }
+            }
+
+            // 3. Extract the 4 corner values
+            let val11 = dataMatrix[r1Index][c1Index]; // Low Alt, Low Temp
+            let val12 = dataMatrix[r1Index][c2Index]; // Low Alt, High Temp
+            let val21 = dataMatrix[r2Index][c1Index]; // High Alt, Low Temp
+            let val22 = dataMatrix[r2Index][c2Index]; // High Alt, High Temp
+
+            // 3a. Return maximum continuous torque if values are not present
+            //if (!val11 || !val12 || !val21 || !val22) return 83.3;
+
+            // 4. Interpolate across the columns (Temperature) for both rows
+            let valR1 = interpolateLinear(targetCol, c1, c2, val11, val12);
+            let valR2 = interpolateLinear(targetCol, c1, c2, val21, val22);
+
+            // 5. Interpolate across the rows (Altitude) using the two new values
+            return interpolateLinear(targetRow, r1, r2, valR1, valR2);
+        }
+
+        // --- Individual Tab Calculators ---
+        function calculatePower(show = true) {
+            let alt = document.getElementById("pwr-alt").value;
+            let oat = document.getElementById("pwr-oat").value;
+            let rpm = document.getElementById("pwr-rpm").value;
+
+            let banner = document.getElementById("pwr-error");
+            if (!isNumeric(alt) || !isNumeric(oat)) {
+                banner.style.display = "block";
+                banner.innerText = "Error: Please verify all input values are valid numbers.";
+                return;
+            } else { banner.style.display = "none"; }
+
+            let warn = document.getElementById("pwr-warning");
+            if (oat < -54) {
+                warn.style.display = "block";
+                warn.style.textAlign = "center";
+                warn.innerText = "OUTSIDE AIR TEMPERATURE IS LESS THAN -54°C";
+                document.getElementById("res-pwr-alt").innerText = "--";
+                document.getElementById("res-pwr-oat").innerText = "--";
+                document.getElementById("res-pwr-isa").innerText = "--";
+                document.getElementById("res-pwr-prop").innerText = "--";
+                document.getElementById("res-pwr-to").innerText = "--";
+                document.getElementById("res-pwr-climb").innerText = "--";
+                document.getElementById("res-pwr-max").innerText = "--";
+                document.getElementById("res-pwr-norm").innerText = "--";
+                document.getElementById("res-pwr-econ").innerText = "--";
+            } else { warn.style.display = "none";
+                document.getElementById("res-pwr-alt").innerText = alt + " ft";
+                document.getElementById("res-pwr-oat").innerText = oat + "°C";
+                document.getElementById("res-pwr-isa").innerText = getISAString(oat, alt);
+                document.getElementById("res-pwr-prop").innerText = "Cruise Power (" + rpm + " rpm)";
+                let takeoff = getBilinearInterpolation(oat, alt / 100, tableTakeoffOATKeys, tableTakeoffFLKeys, tableTakeoffPower);
+                document.getElementById("res-pwr-to").innerText = takeoff <= 0  || takeoff > 100 || alt > 13000 ? "N/A" : parseFloat(takeoff).toFixed(1) + "%";
+                document.getElementById("res-pwr-climb").innerText = parseFloat(getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableClimbPower)).toFixed(1) + "%";
+                document.getElementById("res-pwr-max").innerText = parseFloat(getAlternateTorque(getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableMaxCruisePower), rpm)).toFixed(1) + "%";
+                document.getElementById("res-pwr-norm").innerText = parseFloat(getAlternateTorque(getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableNormCruisePower), rpm)).toFixed(1) + "%";
+                document.getElementById("res-pwr-econ").innerText = parseFloat(getAlternateTorque(getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableEconCruisePower), rpm)).toFixed(1) + "%";
+            }
+
+            if (show) showModal('tab-power');
+        }
+        
+        function calculateTakeoff(show = true) {
+            let weight = document.getElementById("to-weight").value;
+            let alt = document.getElementById("to-alt").value;
+            let oat = document.getElementById("to-oat").value;
+            let windDir = document.getElementById("to-windDir").value;
+            let windSpeed = document.getElementById("to-windSpeed").value;
+            let course = document.getElementById("to-course").value;
+            let slope = document.getElementById("to-slope").value;
+            let cond = document.querySelector('input[name="to-cond"]:checked').value;
+
+            let banner = document.getElementById("to-error");
+            if (!isNumeric(weight) || !isNumeric(alt) || !isNumeric(oat) || !isNumeric(windDir) || 
+                !isNumeric(windSpeed) || !isNumeric(course) || !isNumeric(slope)) {
+                banner.style.display = "block";
+                banner.innerText = "Error: Please verify all input values are valid numbers.";
+                return;
+            } else { banner.style.display = "none"; }
+
+            let windComp = getWindComponents(windSpeed, getWindAngle(windDir, course));
+            document.getElementById("res-to-isa").innerText = getISAString(oat, alt);
+            document.getElementById("res-to-xwind").innerText = windComp[1];
+            document.getElementById("res-to-hwind").innerText = windComp[3];
+
+            let takeoff = getBilinearInterpolation(oat, alt / 100, tableTakeoffOATKeys, tableTakeoffFLKeys, tableTakeoffPower);
+            document.getElementById("takeoff-tq").innerText = takeoff <= 0  || takeoff > 100 ? "N/A" : parseFloat(takeoff).toFixed(1) + "%";
+
+            let data = getTakeoffPerformance(weight, alt, oat, windDir, windSpeed, course, slope, cond);
+            document.getElementById("res-to-gr").innerText = data[0] + " ft";
+            document.getElementById("res-to-d50").innerText = data[1] + " ft";
+            document.getElementById("res-to-astop").innerText = data[2] + " ft";
+            document.getElementById("res-up-gr").innerText = data[3] + " ft";
+            document.getElementById("res-up-d50").innerText = data[4] + " ft";
+            document.getElementById("res-up-astop").innerText = data[5] + " ft";
+
+            if (show) showModal('tab-takeoff');
+        }
+
+        function calculateClimb(show = true) {
+            let weight = document.getElementById("cl-weight").value;
+            let sAlt = document.getElementById("cl-startAlt").value;
+            let sOAT = document.getElementById("cl-startOAT").value;
+            let eAlt = document.getElementById("cl-endAlt").value;
+            let eOAT = document.getElementById("cl-endOAT").value;
+
+            let banner = document.getElementById("cl-error");
+            if (!isNumeric(weight) || !isNumeric(sAlt) || !isNumeric(sOAT) || !isNumeric(eAlt) || !isNumeric(eOAT)) {
+                banner.style.display = "block";
+                banner.innerText = "Error: Please verify all input values are valid numbers.";
+                return;
+            } else { banner.style.display = "none"; }
+
+            let sRoc = getRateOfClimb(weight, sAlt, sOAT);
+            let eRoc = getRateOfClimb(weight, eAlt, eOAT);
+            let sTime = getTimeToClimb(weight, sAlt, sOAT);
+            let eTime = getTimeToClimb(weight, eAlt, eOAT);
+            let sFuel = getFuelToClimb(weight, sAlt, sOAT);
+            let eFuel = getFuelToClimb(weight, eAlt, eOAT);
+            let sDist = getDistanceToClimb(weight, sAlt, sOAT);
+            let eDist = getDistanceToClimb(weight, eAlt, eOAT);
+
+            let warn = document.getElementById("climb-warning");
+            if (sTime < 0 || eTime < 0 || sFuel < 0 || eFuel < 0 || sDist < 0 || eDist < 0) {
+                warn.style.display = "block";
+                warn.style.textAlign = "center";
+                warn.innerText = "OUTSIDE AIR TEMPERATURE IS LESS THAN -54°C";
+                document.getElementById("climb-tq").innerText = "--";
+                document.getElementById("res-climb-sroc").innerText = "--";
+                document.getElementById("res-climb-eroc").innerText = "--";
+                document.getElementById("res-climb-diff").innerText = "--";
+                document.getElementById("res-climb-time").innerText = "--";
+                document.getElementById("res-climb-fuel").innerText = "--";
+                document.getElementById("res-climb-dist").innerText = "--";
+            } else { warn.style.display = "none";
+                document.getElementById("climb-tq").innerText = parseFloat(getBilinearInterpolation(sOAT, sAlt / 100, tableOATKeys, tableFLKeys, tableClimbPower)).toFixed(1) + "%";
+                document.getElementById("res-climb-sroc").innerText = sRoc + " fpm";
+                document.getElementById("res-climb-eroc").innerText = eRoc + " fpm";
+                document.getElementById("res-climb-diff").innerText = Math.round(eAlt - sAlt) + " ft";
+                document.getElementById("res-climb-time").innerText = convertTimeToString(eTime - sTime);
+                document.getElementById("res-climb-fuel").innerText = Math.round(eFuel - sFuel) + " gal";
+                document.getElementById("res-climb-dist").innerText = Math.round(eDist - sDist) + " nm";
+            }
+
+            if (show) showModal('tab-climb');
+        }
+
+        function calculateCruise(show = true) {
+            let alt = document.getElementById("cr-alt").value;
+            let oat = document.getElementById("cr-oat").value;
+            let rpm = document.getElementById("cr-rpm").value;
+
+            let banner = document.getElementById("cr-error");
+            if (!isNumeric(alt) || !isNumeric(oat)) {
+                banner.style.display = "block";
+                banner.innerText = "Error: Please verify all input values are valid numbers.";
+                return;
+            } else { banner.style.display = "none"; }
+
+            let isaDelta = getISAString(oat, alt);
+            document.getElementById("res-cr-isa").innerText = isaDelta;
+            document.getElementById("res-cr-rpm").innerText = rpm + " rpm";
+
+            let maxC = getMaxCruisePerformance(alt, oat);
+            if (maxC == 0 || maxC == -1) {
+                document.getElementById("res-max-tq").innerText = "--";
+                document.getElementById("res-max-ff").innerText = "--";
+                document.getElementById("res-max-kias").innerText = "--";
+                document.getElementById("res-max-ktas").innerText = "--";
+            } else {
+                document.getElementById("res-max-tq").innerText = parseFloat(getAlternateTorque(getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableMaxCruisePower), rpm)).toFixed(1);
+                document.getElementById("res-max-ff").innerText = maxC[1];
+                document.getElementById("res-max-kias").innerText = maxC[2];
+                document.getElementById("res-max-ktas").innerText = maxC[3];
+            }
+
+            let normC = getNormalCruisePerformance(alt, oat);
+            if (normC == -1) {
+                document.getElementById("res-norm-tq").innerText = "--";
+                document.getElementById("res-norm-ff").innerText = "--";
+                document.getElementById("res-norm-kias").innerText = "--";
+                document.getElementById("res-norm-ktas").innerText = "--";
+            } else {
+                document.getElementById("res-norm-tq").innerText = parseFloat(getAlternateTorque(getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableNormCruisePower), rpm)).toFixed(1);
+                document.getElementById("res-norm-ff").innerText = normC[1];
+                document.getElementById("res-norm-kias").innerText = normC[2];
+                document.getElementById("res-norm-ktas").innerText = normC[3];
+            }
+
+            let econC = getEconomyCruisePerformance(alt, oat);
+            if (econC == -1) {
+                document.getElementById("res-econ-tq").innerText = "--";
+                document.getElementById("res-econ-ff").innerText = "--";
+                document.getElementById("res-econ-kias").innerText = "--";
+                document.getElementById("res-econ-ktas").innerText = "--";
+            } else {
+                document.getElementById("res-econ-tq").innerText = parseFloat(getAlternateTorque(getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableEconCruisePower), rpm)).toFixed(1);
+                document.getElementById("res-econ-ff").innerText = econC[1];
+                document.getElementById("res-econ-kias").innerText = econC[2];
+                document.getElementById("res-econ-ktas").innerText = econC[3];
+            }
+
+            if (show) showModal('tab-cruise');
+        }
+
+        function calculateLanding(show = true) {
+            let weight = document.getElementById("ld-weight").value;
+            let alt = document.getElementById("ld-alt").value;
+            let oat = document.getElementById("ld-oat").value;
+            let windDir = document.getElementById("ld-windDir").value;
+            let windSpeed = document.getElementById("ld-windSpeed").value;
+            let course = document.getElementById("ld-course").value;
+            let slope = document.getElementById("ld-slope").value;
+            let cond = document.querySelector('input[name="ld-cond"]:checked').value;
+            let iceMode = document.getElementById("ld-ice").checked ? "Y" : "N";
+
+            let flapsFullHeader = document.getElementById("header-flaps-full");
+            let flapsTOHeader = document.getElementById("header-flaps-to");
+            let flapsUpHeader = document.getElementById("header-flaps-up");
+            let groundRollHeader = document.getElementById("header-ground-roll");
+            let obst50ftHeader = document.getElementById("header-50ft");
+            let fGR = document.getElementById("res-land-fgr");
+            let fD50 = document.getElementById("res-land-fd50");
+            let toGR = document.getElementById("res-land-togr");
+            let toD50 = document.getElementById("res-land-tod50");
+
+            let banner = document.getElementById("ld-error");
+            if (!isNumeric(weight) || !isNumeric(alt) || !isNumeric(oat) || !isNumeric(windDir) || 
+                !isNumeric(windSpeed) || !isNumeric(course) || !isNumeric(slope)) {
+                banner.style.display = "block";
+                banner.innerText = "Error: Please verify all input values are valid numbers.";
+                return;
+            } else { banner.style.display = "none"; }
+
+            let overweightBanner = document.getElementById("overweight-banner");
+
+            if (weight > 7600) {
+                let overweight = weight - 7600;
+                weight = 7600;
+                overweightBanner.className = "section-alert" ;
+                overweightBanner.innerText = "-- OVER LANDING WEIGHT BY " + overweight + (overweight > 1 ? " LBS --" : " LB --");
+            } else {
+                overweightBanner.className = "" ;
+                overweightBanner.innerText = "";
+            }
+
+            let windComp = getWindComponents(windSpeed, getWindAngle(windDir, course));
+            document.getElementById("res-ld-isa").innerText = getISAString(oat, alt);
+            document.getElementById("res-ld-xwind").innerText = windComp[1];
+            document.getElementById("res-ld-hwind").innerText = windComp[3];
+
+            let data = getLandingPerformance(weight, alt, oat, windDir, windSpeed, course, slope, cond, iceMode);
+            fGR.innerText = iceMode == "Y" ? "Not Authorized" : data[0] + " ft";
+            fD50.innerText = iceMode == "Y" ? "Not Authorized" : data[1] + " ft";
+            toGR.innerText = data[2] + " ft";
+            toD50.innerText = data[3] + " ft";
+            document.getElementById("res-land-upgr").innerText = data[4] + " ft";
+            document.getElementById("res-land-upd50").innerText = data[5] + " ft";
+
+            if (iceMode === "Y") {
+                flapsFullHeader.innerText = "Flaps FULL (Pusher Ice Mode)";
+                fGR.style.color = "#ef4444";
+                fD50.style.color = "#ef4444";
+                flapsTOHeader.innerText = "Flaps T/O (Pusher Ice Mode)";
+                flapsTOHeader.style.color = "yellow";
+                flapsUpHeader.innerText = "Flaps UP (Pusher Ice Mode - EMERGENCY)";
+                groundRollHeader.style.color = "yellow";
+                obst50ftHeader.style.color = "yellow";
+                toGR.style.color = "yellow";
+                toD50.style.color = "yellow";
+            } else {
+                flapsFullHeader.innerText = "Flaps FULL";
+                fGR.style.color = "";
+                fD50.style.color = "";
+                flapsTOHeader.innerText = "Flaps T/O";
+                flapsTOHeader.style.color = "";
+                flapsUpHeader.innerText = "Flaps UP";
+                groundRollHeader.style.color = "";
+                obst50ftHeader.style.color = "";
+                toGR.style.color = "";
+                toD50.style.color = "";
+            }
+
+            if (show) showModal('tab-landing');
+        }
+
+        // --- Core Math & Lookup Functions ---
+        function populateWeightPickers() {
+            const weightIds = ['to-weight', 'cl-weight', 'ld-weight'];
+            let options = '';
+            
+            for (let i = 8000; i >= 6000; i -= 50) {
+                options += `<option value="${i}">${i}</option>`;
+            }
+            
+            weightIds.forEach(id => {
+                let selectEl = document.getElementById(id);
+                if (selectEl) {
+                    selectEl.innerHTML = options;
+                    selectEl.value = "7600"; // Default starting weight
+                }
+            });
+        }
+
+        function populateAirfieldAltPickers() {
+            const airfieldIds = ['to-alt', 'ld-alt'];
+            let options = '';
+            
+            for (let i = 13000; i >= 0; i -= 500) {
+                options += `<option value="${i}">${i}</option>`;
+            }
+            
+            airfieldIds.forEach(id => {
+                let selectEl = document.getElementById(id);
+                if (selectEl) {
+                    selectEl.innerHTML = options;
+                    selectEl.value = startAlt.toFixed(0); // Default starting elevation
+                }
+            });
+        }
+
+        function populateAltitudePickers() {
+            const altitudeIds = ['pwr-alt', 'cl-startAlt', 'cl-endAlt', 'cr-alt']; 
+            let options = '';
+            for (let i = 34000; i >= 18000; i -= 1000) {   
+                options += `<option value="${i}">${i}</option>`;
+            }
+
+            for (let i = 17500; i >= 0; i -= 500) {
+                options += `<option value="${i}">${i}</option>`;
+            }
+
+            altitudeIds.forEach(id => {
+                let selectEl = document.getElementById(id);
+                if (selectEl) {
+                    selectEl.innerHTML = options;
+                    if (selectEl.id === "cl-startAlt") {
+                        selectEl.value = startAlt; // Default starting elevation
+                    } else {
+                        selectEl.value = endAlt; // Default starting elevation
+                    }
+                    
+                }
+            });
+        }
+
+        function populateOATPickers() {
+            const ids = ['pwr-oat', 'cl-startOAT', 'cl-endOAT', 'cr-oat'];
+            let options = '';
+            
+            for (let i = 49; i >= -54; i -= 1) {
+                options += `<option value="${i}">${i}</option>`;
+            }
+            
+            ids.forEach(id => {
+                let selectEl = document.getElementById(id);
+                if (selectEl) {
+                    selectEl.innerHTML = options;
+                    if (selectEl.id === "cl-startOAT") {
+                        selectEl.value = startOAT.toFixed(0); // Default starting OAT
+                    } else {
+                        selectEl.value = endOAT.toFixed(0);
+                    }
+                }
+            });
+        }
+
+        function populateAirfieldOATPickers() {
+            const ids = ['to-oat', 'ld-oat'];
+            let options =  "";
+
+            for (let i = 49; i >= -25; i -= 1) {
+                options += `<option value="${i}">${i}</option>`;
+            }
+            
+            ids.forEach(id => {
+                let selectEl = document.getElementById(id);
+                if (selectEl) {
+                    selectEl.innerHTML = options;
+                    selectEl.value = startOAT; // Default starting OAT
+                }
+            });
+        }
+
+        function populateRPMPickers() {
+            const ids = ['pwr-rpm', 'cr-rpm'];
+            let options = "";
+
+            for (let i = 1700; i >= 1500; i += -10) {
+                options += `<option value="${i}">${i}</option>`;
+            }
+            
+            ids.forEach(id => {
+                let selectEl = document.getElementById(id);
+                if (selectEl) {
+                    selectEl.innerHTML = options;
+                    selectEl.value = "1700"; // Default starting RPM
+                }
+            });
+        }
+
+        function populateHeadingPickers() {
+            const ids = ['to-windDir', 'to-course', 'ld-windDir', 'ld-course'];
+            let options = "";
+
+            for (let i = 10; i <= 360; i += 10) {
+                options += `<option value="${i}">${i}</option>`;
+            }
+            
+            ids.forEach(id => {
+                let selectEl = document.getElementById(id);
+                if (selectEl) {
+                    selectEl.innerHTML = options;
+                    selectEl.value = "360"; // Default starting heading
+                }
+            });
+        }
+
+        function populateSpeedPickers() {
+            const ids = ['to-windSpeed', 'ld-windSpeed'];
+            let options = "";
+
+            for (let i = 30; i >= 0; i -= 1) {
+                options += `<option value="${i}">${i}</option>`;
+            }
+            
+            ids.forEach(id => {
+                let selectEl = document.getElementById(id);
+                if (selectEl) {
+                    selectEl.innerHTML = options;
+                    selectEl.value = "0"; // Default starting speed
+                }
+            });
+        }
+
+        function populateSlopePickers() {
+            const ids = ['to-slope', 'ld-slope'];
+            let options = "";
+
+            for (let i = 3; i >= -3.05; i -= 0.1) {
+                if (i.toFixed(1) == 0) {
+                    options += `<option value="0">0</option>`;
+                } else {
+                    options += `<option value="${i.toFixed(1)}">${i.toFixed(1)}</option>`;
+                }
+            }
+            
+            ids.forEach(id => {
+                let selectEl = document.getElementById(id);
+                if (selectEl) {
+                    selectEl.innerHTML = options;
+                    selectEl.value = "0"; // Default starting slope
+                }
+            });
+        }
+
+        function getAlternateTorque(normTQ, newRPM) {
+            let hp = (normTQ * 1700) / 5252;
+            return (hp * 5252) / newRPM;
+        }
+
+        function getTakeoffPerformance(weight, altitude, oat, windDirection, windSpeed, course, slope, runwayCondition) {
+            let windComponents = getWindComponents(windSpeed, getWindAngle(windDirection, course));
+            let headwind = windComponents[2];
+            let flapsTOGR, flapsTOD50, flapsTOastop, flapsUPGR, flapsUPD50, flapsUPastop;
+
+            let aircraftWeight = Math.min(Math.max(weight, 6000), 8000);
+            let pressureAltitude = Math.min(Math.max(altitude, 0), 10000);
+            let isaDelta = Math.min(Math.max(convertToISA(oat, altitude), -55), 40);
+
+            let distanceAssist = headwind >= 0;
+            let slopeAssist = slope <= 0;
+            
+            let distanceFactor = Math.abs(Math.min(Math.max(headwind / 10.0, -3), 3));
+            let slopeFactor = Math.abs(Math.min(Math.max(slope / 1.0, -3), 3));
+
+            let gr = 0.0, d50 = 0.0, grWindChange = 0.0, d50WindChange = 0.0, grSlopeChange = 0.0, d50SlopeChange = 0.0;
+
+            // Flaps T/O
+            gr = getTripleLookup(tableTOPerfTOGR, aircraftWeight, pressureAltitude, isaDelta);
+            d50 = getTripleLookup(tableTOPerfTOD50, aircraftWeight, pressureAltitude, isaDelta);
+
+            if (distanceFactor > 0) {
+                grWindChange = distanceAssist ? -((distanceFactor * 0.14) * gr) : ((distanceFactor * 0.22) * gr);
+                d50WindChange = distanceAssist ? -((distanceFactor * 0.11) * d50) : ((distanceFactor * 0.22) * d50);
+            }
+            if (slopeFactor > 0) {
+                grSlopeChange = slopeAssist ? -((slopeFactor * 0.01) * gr) : ((slopeFactor * 0.11) * gr);
+                d50SlopeChange = slopeAssist ? -((slopeFactor * 0.01) * d50) : ((slopeFactor * 0.11) * d50);
+            }
+
+            flapsTOGR = gr + grWindChange + grSlopeChange;
+            flapsTOD50 = d50 + d50WindChange + d50SlopeChange;
+
+            let takeoffDistance = gr + grWindChange + grSlopeChange;
+            let abortFactor = gr * 0.8;
+            
+            if (distanceFactor > 0) {
+                grWindChange = distanceAssist ? -((distanceFactor * 0.09) * gr) : ((distanceFactor * 0.40) * gr);
+            }
+            if (slopeFactor > 0) {
+                grSlopeChange = slopeAssist ? ((slopeFactor * 0.06) * gr) : -((slopeFactor * 0.01) * gr);
+            }
+            
+            let grRunwayChange = runwayCondition === 'W' ? gr * 0.5 : (runwayCondition === 'I' ? gr : 0.0);
+            flapsTOastop = takeoffDistance + abortFactor + grWindChange + grSlopeChange + grRunwayChange;
+
+            // Flaps UP
+            gr = getTripleLookup(tableTOPerfUPGR, aircraftWeight, pressureAltitude, isaDelta);
+            d50 = getTripleLookup(tableTOPerfUPD50, aircraftWeight, pressureAltitude, isaDelta);
+
+            if (distanceFactor > 0) {
+                grWindChange = distanceAssist ? -((distanceFactor * 0.14) * gr) : ((distanceFactor * 0.22) * gr);
+                d50WindChange = distanceAssist ? -((distanceFactor * 0.11) * d50) : ((distanceFactor * 0.22) * d50);
+            }
+            if (slopeFactor > 0) {
+                grSlopeChange = slopeAssist ? -((slopeFactor * 0.01) * gr) : ((slopeFactor * 0.11) * gr);
+                d50SlopeChange = slopeAssist ? -((slopeFactor * 0.01) * d50) : ((slopeFactor * 0.11) * d50);
+            }
+
+            flapsUPGR = gr + grWindChange + grSlopeChange;
+            flapsUPD50 = d50 + d50WindChange + d50SlopeChange;
+
+            takeoffDistance = gr + grWindChange + grSlopeChange;
+            abortFactor = gr;
+
+            if (distanceFactor > 0) {
+                grWindChange = distanceAssist ? -((distanceFactor * 0.09) * gr) : ((distanceFactor * 0.40) * gr);
+            }
+            if (slopeFactor > 0) {
+                grSlopeChange = slopeAssist ? ((slopeFactor * 0.06) * gr) : -((slopeFactor * 0.01) * gr);
+            }
+
+            grRunwayChange = runwayCondition === 'W' ? gr * 0.5 : (runwayCondition === 'I' ? gr : 0.0);
+            flapsUPastop = takeoffDistance + abortFactor + grWindChange + grSlopeChange + grRunwayChange;
+
+            return [Math.round(flapsTOGR), Math.round(flapsTOD50), Math.round(flapsTOastop), Math.round(flapsUPGR), Math.round(flapsUPD50), Math.round(flapsUPastop)];
+        }
+
+        function getRateOfClimb(weight, altitude, oat) {
+            let aircraftWeight = Math.min(Math.max(weight, 6000), 8000);
+            let pressureAltitude = Math.min(Math.max(altitude, 0), 34000);
+            let isaDelta = Math.min(Math.max(convertToISA(oat, altitude), -55), 40);
+            return Math.round(getTripleLookup(tableROC, aircraftWeight, pressureAltitude, isaDelta));
+        }
+
+        function getTimeToClimb(weight, altitude, oat) {
+            let aircraftWeight = Math.min(Math.max(weight, 6000), 8000);
+            let isaDelta = Math.min(Math.max(convertToISA(oat, altitude), -20), 20);
+            let pressureAltitude = altitude < 0 ? 0 : altitude;
+            //if (isaDelta < 0 && pressureAltitude > 24000) return -1;
+            if (oat < -54) return -1
+            pressureAltitude = Math.min(pressureAltitude, 34000);
+            return getTripleLookup(tableTimeToClimb, aircraftWeight, pressureAltitude, isaDelta);
+        }
+
+        function getFuelToClimb(weight, altitude, oat) {
+            let aircraftWeight = Math.min(Math.max(weight, 6000), 8000);
+            let isaDelta = Math.min(Math.max(convertToISA(oat, altitude), -20), 20);
+            let pressureAltitude = altitude < 0 ? 0 : altitude;
+            //if (isaDelta < 0 && pressureAltitude > 24000) return -1;
+            if (oat < -54) return -1
+            pressureAltitude = Math.min(pressureAltitude, 34000);
+            return getTripleLookup(tableFuelToClimb, aircraftWeight, pressureAltitude, isaDelta);
+        }
+
+        function getDistanceToClimb(weight, altitude, oat) {
+            let aircraftWeight = Math.min(Math.max(weight, 6000), 8000);
+            let isaDelta = Math.min(Math.max(convertToISA(oat, altitude), -20), 20);
+            let pressureAltitude = altitude < 0 ? 0 : altitude;
+            //if (isaDelta < 0 && pressureAltitude > 24000) return -1;
+            if (oat < -54) return -1
+            pressureAltitude = Math.min(pressureAltitude, 34000);
+            return getTripleLookup(tableDistanceToClimb, aircraftWeight, pressureAltitude, isaDelta);
+        }
+
+        function getMaxCruisePerformance(altitude, oat) {
+            let isaDelta = Math.min(Math.max(convertToISA(oat, altitude), -20), 30);
+            if (altitude < 24000) return 0;
+            if (oat <= -55) return -1;
+
+            let torque = getCruiseLookup(tableMaxCruisePerformance, cruiseSetting.TQ, 8000, altitude, isaDelta).toFixed(1);
+            let fuelFlow = getCruiseLookup(tableMaxCruisePerformance, cruiseSetting.FF, 8000, altitude, isaDelta).toFixed(1);
+            let ias = Math.round(getCruiseLookup(tableMaxCruisePerformance, cruiseSetting.IAS, 8000, altitude, isaDelta));
+            let tas = Math.round(getCruiseLookup(tableMaxCruisePerformance, cruiseSetting.TAS, 8000, altitude, isaDelta));
+            return [torque, fuelFlow, ias, tas];
+        }
+
+        function getNormalCruisePerformance(altitude, oat) {
+            let isaDelta = Math.min(Math.max(convertToISA(oat, altitude), -30), 30);
+            if (oat <= -55) return -1;
+
+            let torque = getCruiseLookup(tableNormalCruisePerformance, cruiseSetting.TQ, 8000, altitude, isaDelta).toFixed(1);
+            let fuelFlow = getCruiseLookup(tableNormalCruisePerformance, cruiseSetting.FF, 8000, altitude, isaDelta).toFixed(1);
+            let ias = Math.round(getCruiseLookup(tableNormalCruisePerformance, cruiseSetting.IAS, 8000, altitude, isaDelta));
+            let tas = Math.round(getCruiseLookup(tableNormalCruisePerformance, cruiseSetting.TAS, 8000, altitude, isaDelta));
+            return [torque, fuelFlow, ias, tas];
+        }
+
+        function getEconomyCruisePerformance(altitude, oat) {
+            let isaDelta = Math.min(Math.max(convertToISA(oat, altitude), -30), 5);
+            if (oat <= -55) return -1;
+
+            let torque = getCruiseLookup(tableEconomyCruisePerformance, cruiseSetting.TQ, 8000, altitude, isaDelta).toFixed(1);
+            let fuelFlow = getCruiseLookup(tableEconomyCruisePerformance, cruiseSetting.FF, 8000, altitude, isaDelta).toFixed(1);
+            let ias = Math.round(getCruiseLookup(tableEconomyCruisePerformance, cruiseSetting.IAS, 8000, altitude, isaDelta));
+            let tas = Math.round(getCruiseLookup(tableEconomyCruisePerformance, cruiseSetting.TAS, 8000, altitude, isaDelta));
+            return [torque, fuelFlow, ias, tas];
+        }
+
+        function getLandingPerformance(weight, altitude, oat, windDirection, windSpeed, course, slope, runwayCondition, iceMode) {
+            let windComponents = getWindComponents(windSpeed, getWindAngle(windDirection, course));
+            let headwind = windComponents[2];
+            let aircraftWeight = Math.min(Math.max(weight, 6000), 8000);
+            let pressureAltitude = Math.min(Math.max(altitude, 0), 10000);
+            let isaDelta = Math.min(Math.max(convertToISA(oat, altitude), -55), 40);
+
+            let distanceAssist = headwind >= 0;
+            let slopeAssist = slope <= 0;
+            let distanceFactor = Math.abs(Math.min(Math.max(headwind / 10.0, -3), 3));
+            let slopeFactor = Math.abs(Math.min(Math.max(slope / 1.0, -3), 3));
+
+            let gr = 0.0, d50 = 0.0, grWindChange = 0.0, d50WindChange = 0.0, grSlopeChange = 0.0, d50SlopeChange = 0.0;
+            let grRunwayChange = 0.0, d50RunwayChange = 0.0, grPusherChange = 0.0, d50PusherChange = 0.0;
+
+            // Flaps FULL
+            gr = getTripleLookup(tableLandPerfFULLGR, aircraftWeight, pressureAltitude, isaDelta);
+            d50 = getTripleLookup(tableLandPerfFULLD50, aircraftWeight, pressureAltitude, isaDelta);
+
+            if (distanceFactor > 0) {
+                grWindChange = distanceAssist ? -((distanceFactor * 0.09) * gr) : ((distanceFactor * 0.40) * gr);
+                d50WindChange = distanceAssist ? -((distanceFactor * 0.06) * d50) : ((distanceFactor * 0.45) * d50);
+            }
+            if (slopeFactor > 0) {
+                grSlopeChange = slopeAssist ? -((slopeFactor * 0.01) * gr) : ((slopeFactor * 0.06) * gr);
+                d50SlopeChange = slopeAssist ? -((slopeFactor * 0.01) * d50) : ((slopeFactor * 0.06) * d50);
+            }
+            if (iceMode === 'Y') {
+                grPusherChange = gr * .20;
+                d50PusherChange = d50 * .20;
+            }
+            if (runwayCondition === 'W') {
+                grRunwayChange = gr * 0.5;
+                d50RunwayChange = d50 * 0.5;
+            } else if (runwayCondition === 'I') {
+                grRunwayChange = gr;
+                d50RunwayChange = d50;
+            }
+
+            let flapsFULLGR = gr + grWindChange + grSlopeChange + grPusherChange + grRunwayChange;
+            let flapsFULLD50 = d50 + d50WindChange + d50SlopeChange + d50PusherChange + d50RunwayChange;
+
+            // Flaps T/O
+            gr = getTripleLookup(tableLandPerfTOGR, aircraftWeight, pressureAltitude, isaDelta);
+            d50 = getTripleLookup(tableLandPerfTOD50, aircraftWeight, pressureAltitude, isaDelta);
+
+            if (distanceFactor > 0) {
+                grWindChange = distanceAssist ? -((distanceFactor * 0.09) * gr) : ((distanceFactor * 0.40) * gr);
+                d50WindChange = distanceAssist ? -((distanceFactor * 0.06) * d50) : ((distanceFactor * 0.45) * d50);
+            }
+            if (slopeFactor > 0) {
+                grSlopeChange = slopeAssist ? -((slopeFactor * 0.01) * gr) : ((slopeFactor * 0.06) * gr);
+                d50SlopeChange = slopeAssist ? -((slopeFactor * 0.01) * d50) : ((slopeFactor * 0.06) * d50);
+            }
+            if (iceMode === 'Y') {
+                grPusherChange = gr * .20;
+                d50PusherChange = d50 * .20;
+            }
+            if (runwayCondition === 'W') {
+                grRunwayChange = gr * 0.5;
+                d50RunwayChange = d50 * 0.5;
+            } else if (runwayCondition === 'I') {
+                grRunwayChange = gr;
+                d50RunwayChange = d50;
+            }
+
+            let flapsTOGR = gr + grWindChange + grSlopeChange + grPusherChange + grRunwayChange;
+            let flapsTOD50 = d50 + d50WindChange + d50SlopeChange + d50PusherChange + d50RunwayChange;
+            let flapsUPGR = (gr * .25) + flapsTOGR;
+            let flapsUPD50 = (d50 * .25) + flapsTOD50;
+
+            return [Math.round(flapsFULLGR), Math.round(flapsFULLD50), Math.round(flapsTOGR), Math.round(flapsTOD50), Math.round(flapsUPGR), Math.round(flapsUPD50)];
+        }
+
+        function getISAString(oat, alt) {
+            let isaDelta = convertToISA(oat, alt);
+            let isa = Math.round(isaDelta);
+            return isa < 0 ? isa : '+' + isa;
+        }
+
+        function getWindComponents(windSpeed, windAngle) {
+            let xwind = windSpeed * Math.sin(windAngle * (Math.PI / 180));
+            let xwindString = 'No Crosswind';
+            if (Math.round(xwind) != 0) {
+                let dir = xwind < 0 ? ' (Left)' : ' (Right)';
+                let unit = Math.abs(Math.round(xwind)) > 1 ? ' knots' : ' knot';
+                xwindString = Math.round(Math.abs(xwind)) + unit + dir;
+            }
+
+            let headwind = windSpeed * Math.cos(windAngle * (Math.PI / 180));
+            let headwindString = 'No Headwind';
+            if (Math.round(headwind) != 0) {
+                let unit = Math.abs(Math.round(headwind)) > 1 ? ' knots' : ' knot';
+                headwindString = Math.round(Math.abs(headwind)) + unit;
+            }
+            return [xwind, xwindString, headwind, headwindString];
+        }
+
+        function getWindAngle(windDirection, course) {
+            let windAngle = windDirection - course;
+            if (windAngle < -180) windAngle += 360;
+            if (windAngle > 180) windAngle -= 360;
+            return windAngle;
+        }
+
+        function getTripleLookup(table, primaryValue, secondaryValue, tertiaryValue) {
+            let tempLimit = getLookupKeys(primaryValue, table);
+            let lowerPrimary = tempLimit[0], higherPrimary = tempLimit[1];
+
+            if (lowerPrimary == higherPrimary) {
+                return getSubLookup(table.get(lowerPrimary), secondaryValue, tertiaryValue);
+            } else {
+                let lowVal = getSubLookup(table.get(lowerPrimary), secondaryValue, tertiaryValue);
+                let highVal = getSubLookup(table.get(higherPrimary), secondaryValue, tertiaryValue);
+                let percent = (primaryValue - lowerPrimary) / (higherPrimary - lowerPrimary);
+                return ((highVal - lowVal) * percent) + lowVal;
+            }
+        }
+
+        function getSubLookup(subTable, secondaryValue, tertiaryValue) {
+            let tempLimit = getLookupKeys(secondaryValue, subTable);
+            let lowerSecondary = tempLimit[0], higherSecondary = tempLimit[1];
+
+            if (lowerSecondary == higherSecondary) {
+                return getTertiaryInterpolated(subTable.get(lowerSecondary), tertiaryValue);
+            } else {
+                let lowVal = getTertiaryInterpolated(subTable.get(lowerSecondary), tertiaryValue);
+                let highVal = getTertiaryInterpolated(subTable.get(higherSecondary), tertiaryValue);
+                let percent = (secondaryValue - lowerSecondary) / (higherSecondary - lowerSecondary);
+                return ((highVal - lowVal) * percent) + lowVal;
+            }
+        }
+
+        function getTertiaryInterpolated(tertiaryTable, tertiaryValue) {
+            let tempLimit = getLookupKeys(tertiaryValue, tertiaryTable);
+            let lowerTertiary = tempLimit[0], higherTertiary = tempLimit[1];
+            if (lowerTertiary == higherTertiary) {
+                return tertiaryTable.get(lowerTertiary);
+            } else {
+                let lowVal = tertiaryTable.get(lowerTertiary);
+                let highVal = tertiaryTable.get(higherTertiary);
+                let percent = (tertiaryValue - lowerTertiary) / (higherTertiary - lowerTertiary);
+                return ((highVal - lowVal) * percent) + lowVal;
+            }
+        }
+
+        function getCruiseLookup(table, setting, primaryValue, secondaryValue, tertiaryValue) {
+            let tempLimit = getLookupKeys(primaryValue, table);
+            let lowerPrimary = tempLimit[0], higherPrimary = tempLimit[1];
+
+            if (lowerPrimary == higherPrimary) {
+                return getCruiseSubLookup(table.get(lowerPrimary), setting, secondaryValue, tertiaryValue);
+            } else {
+                let lowVal = getCruiseSubLookup(table.get(lowerPrimary), setting, secondaryValue, tertiaryValue);
+                let highVal = getCruiseSubLookup(table.get(higherPrimary), setting, secondaryValue, tertiaryValue);
+                let percent = (primaryValue - lowerPrimary) / (higherPrimary - lowerPrimary);
+                return ((highVal - lowVal) * percent) + lowVal;
+            }
+        }
+
+        function getCruiseSubLookup(subTable, setting, secondaryValue, tertiaryValue) {
+            let tempLimit = getLookupKeys(secondaryValue, subTable);
+            let lowerSecondary = tempLimit[0], higherSecondary = tempLimit[1];
+
+            if (lowerSecondary == higherSecondary) {
+                return getCruiseTertiaryInterpolated(subTable.get(lowerSecondary), setting, tertiaryValue);
+            } else {
+                let lowVal = getCruiseTertiaryInterpolated(subTable.get(lowerSecondary), setting, tertiaryValue);
+                let highVal = getCruiseTertiaryInterpolated(subTable.get(higherSecondary), setting, tertiaryValue);
+                let percent = (secondaryValue - lowerSecondary) / (higherSecondary - lowerSecondary);
+                return ((highVal - lowVal) * percent) + lowVal;
+            }
+        }
+
+        function getCruiseTertiaryInterpolated(tertiaryTable, setting, tertiaryValue) {
+            let tempLimit = getLookupKeys(tertiaryValue, tertiaryTable);
+            let lowerTertiary = tempLimit[0], higherTertiary = tempLimit[1];
+            if (lowerTertiary == higherTertiary) {
+                return tertiaryTable.get(lowerTertiary)[setting];
+            } else {
+                let lowVal = tertiaryTable.get(lowerTertiary)[setting];
+                let highVal = tertiaryTable.get(higherTertiary)[setting];
+                let percent = (tertiaryValue - lowerTertiary) / (higherTertiary - lowerTertiary);
+                return ((highVal - lowVal) * percent) + lowVal;
+            }
+        }
+
+        function getLookupKeys(lookupKey, lookupMap) {
+            let lowKey = 0, highKey = 0;
+            for (let [key, value] of lookupMap) {
+                if (key == lookupKey) {
+                    lowKey = key; highKey = key; break;
+                } else {
+                    if (key < lookupKey) lowKey = key;
+                    if (key > lookupKey && highKey == 0) highKey = key;
+                }
+            }
+            return [lowKey, highKey];
+        }
+
+        function getISAatALT(alt) {
+            return (15 - (1.98 * alt) / 1000);
+        }
+
+        function convertToISA(oat, alt) {
+            return (oat - (15 - (1.98 * alt) / 1000));
+        }
+
+        function convertTimeToString(time) {
+            let minute = Math.floor(time);
+            let second = Math.round((time % 1) * 60);
+            return minute + 'm + ' + (second < 10 ? '0' : '') + second + 's';
+        }
+
+        // --- Data Map Initializers ---
+
+        function buildTakeoffPerformanceTables(tableTOGR, tableTOD50, tableUPGR, tableUPD50) {
+            let valueISA, valueAltitude;
+            let weights = [6000, 7000, 8000];
+            let alts = [0, 2000, 4000, 6000, 8000, 10000];
+            
+            // Flaps TO GR
+            let rawTOGR = {
+                6000: [[666,732,778,825,873,921,971,1021,1193,1511],[725,799,850,902,955,1009,1064,1120,1345,1702],[790,873,929,987,1046,1106,1167,1229,1529,1945],[863,954,1017,1081,1147,1214,1282,1413,1748,2220],[943,1045,1115,1186,1259,1334,1410,1629,2008,2547],[1052,1168,1248,1329,1413,1498,1658,1910,2359,2998]],
+                7000: [[910,1001,1064,1128,1193,1260,1328,1397,1632,2072],[991,1092,1162,1233,1306,1380,1455,1532,1841,2333],[1081,1193,1271,1350,1430,1513,1597,1682,2095,2668],[1180,1305,1391,1479,1569,1661,1754,1935,2395,3048],[1289,1429,1525,1623,1723,1826,1930,2231,2753,3498],[1439,1598,1708,1819,1934,2051,2270,2618,3237,4122]],
+                8000: [[1194,1314,1396,1480,1566,1654,1743,1834,2144,2725],[1300,1433,1525,1618,1714,1811,1910,2011,2420,3070],[1418,1566,1668,1771,1877,1986,2096,2209,2754,3512],[1548,1713,1826,1942,2060,2181,2304,2542,3151,4015],[1692,1876,2002,2131,2263,2398,2535,2932,3623,4612],[1890,2099,2242,2389,2540,2694,2983,3442,4263,5437]]
+            };
+            let isaKeys = [-55, -40, -30, -20, -10, 0, 10, 20, 30, 40];
+
+            weights.forEach(w => {
+                valueAltitude = new Map();
+                alts.forEach((a, idx) => {
+                    valueISA = new Map();
+                    isaKeys.forEach((k, kidx) => valueISA.set(k, rawTOGR[w][idx][kidx]));
+                    valueAltitude.set(a, valueISA);
+                });
+                tableTOGR.set(w, valueAltitude);
+            });
+
+            // Flaps TO D50
+            let rawTOD50 = {
+                6000: [[993,1084,1146,1209,1273,1339,1406,1474,1726,2211],[1074,1174,1242,1312,1384,1457,1531,1607,1939,2483],[1162,1273,1349,1427,1507,1587,1670,1754,2199,2834],[1260,1383,1468,1554,1643,1733,1825,2011,2509,3236],[1368,1505,1600,1696,1794,1895,1997,2314,2880,3715],[1518,1674,1781,1891,2003,2117,2343,2710,3385,4386]],
+                7000: [[1303,1424,1506,1591,1677,1764,1853,1944,2281,2932],[1410,1544,1635,1729,1824,1921,2020,2121,2566,3298],[1528,1676,1778,1882,1988,2096,2206,2318,2915,3773],[1659,1823,1936,2051,2169,2290,2413,2662,3331,4317],[1803,1986,2112,2240,2372,2506,2643,3068,3831,4970],[2002,2210,2354,2500,2650,2803,3106,3599,4513,5885]],
+                8000: [[1659,1815,1921,2030,2141,2254,2369,2486,2923,3774],[1797,1969,2087,2208,2331,2456,2584,2715,3293,4253],[1949,2140,2271,2405,2542,2682,2824,2970,3747,4877],[2117,2330,2476,2625,2777,2933,3092,3416,4290,5596],[2303,2540,2703,2869,3039,3213,3391,3944,4945,6463],[2560,2830,3015,3205,3399,3597,3991,4636,5841,7685]]
+            };
+            weights.forEach(w => {
+                valueAltitude = new Map();
+                alts.forEach((a, idx) => {
+                    valueISA = new Map();
+                    isaKeys.forEach((k, kidx) => valueISA.set(k, rawTOD50[w][idx][kidx]));
+                    valueAltitude.set(a, valueISA);
+                });
+                tableTOD50.set(w, valueAltitude);
+            });
+
+            // Flaps UP GR
+            let rawUPGR = {
+                6000: [[707,778,827,878,929,981,1035,1089,1278,1634],[770,850,904,960,1017,1076,1135,1196,1444,1846],[840,929,990,1052,1115,1180,1247,1314,1648,2117],[918,1017,1085,1154,1225,1297,1371,1516,1889,2427],[1005,1115,1190,1268,1347,1428,1511,1752,2179,2797],[1123,1248,1334,1422,1513,1605,1781,2063,2571,3311]],
+                7000: [[966,1064,1132,1200,1271,1343,1416,1490,1750,2241],[1053,1162,1237,1313,1392,1472,1553,1636,1978,2532],[1149,1271,1354,1439,1526,1615,1706,1799,2258,2906],[1180,1305,1391,1479,1569,1661,1754,1935,2395,3048],[1374,1525,1629,1735,1843,1955,2068,2401,2989,3845],[1536,1708,1826,1947,2071,2198,2440,2828,3530,4555]],
+                8000: [[1268,1396,1485,1576,1668,1762,1859,1957,2299,2949],[1382,1525,1624,1724,1827,1932,2039,2149,2601,3333],[1508,1668,1777,1889,2004,2121,2241,2363,2969,3828],[1649,1826,1948,2073,2201,2332,2466,2727,3408,4395],[1804,2002,2139,2278,2421,2568,2717,3157,3935,5072],[2017,2243,2398,2558,2721,2888,3207,3720,4650,6014]]
+            };
+            weights.forEach(w => {
+                valueAltitude = new Map();
+                alts.forEach((a, idx) => {
+                    valueISA = new Map();
+                    isaKeys.forEach((k, kidx) => valueISA.set(k, rawUPGR[w][idx][kidx]));
+                    valueAltitude.set(a, valueISA);
+                });
+                tableUPGR.set(w, valueAltitude);
+            });
+
+            // Flaps UP D50
+            let rawUPD50 = {
+                6000: [[1090,1192,1262,1333,1406,1481,1556,1634,1922,2485],[1180,1294,1371,1450,1531,1614,1698,1784,2167,2801],[1280,1406,1492,1580,1671,1763,1857,1952,2467,3213],[1391,1531,1627,1725,1826,1928,2033,2248,2826,3686],[1513,1669,1777,1886,1999,2113,2231,2596,3259,4257],[1682,1860,1982,2107,2236,2367,2627,3054,3851,5058]],
+                7000: [[1426,1561,1654,1749,1846,1944,2045,2148,2532,3286],[1546,1696,1799,1904,2012,2122,2234,2348,2858,3710],[1679,1845,1960,2077,2197,2319,2444,2572,3260,4266],[1825,2011,2139,2269,2403,2539,2679,2965,3741,4906],[1988,2195,2338,2484,2633,2786,2942,3431,4323,5682],[2212,2448,2611,2777,2948,3123,3471,4044,5120,6774]],
+                8000: [[1812,1985,2105,2226,2351,2478,2608,2740,3237,4221],[1966,2159,2291,2426,2565,2706,2851,2998,3660,4776],[2136,2351,2498,2649,2803,2961,3122,3286,4182,5506],[2325,2564,2728,2896,3069,3245,3425,3796,4809,6351],[2534,2801,2984,3173,3365,3563,3764,4401,5571,7381],[2822,3126,3336,3551,3772,3997,4449,5197,6616,8840]]
+            };
+            weights.forEach(w => {
+                valueAltitude = new Map();
+                alts.forEach((a, idx) => {
+                    valueISA = new Map();
+                    isaKeys.forEach((k, kidx) => valueISA.set(k, rawUPD50[w][idx][kidx]));
+                    valueAltitude.set(a, valueISA);
+                });
+                tableUPD50.set(w, valueAltitude);
+            });
+        }
+
+        function buildRateOfClimbTables(table) {
+            let weights = [6000, 7000, 8000];
+            let alts = [0,2000,4000,6000,8000,10000,12000,14000,16000,18000,20000,22000,24000,26000,28000,30000,32000,34000];
+            let isaKeys = [-20, -10, 0, 10, 20, 30];
+
+            let rawROC = {
+                6000: [[3884,3786,3731,3678,3627,3579],[3753,3695,3640,3587,3536,3488],[3662,3604,3549,3496,3446,3266],[3571,3513,3458,3406,3355,3029],[3480,3422,3368,3315,3265,2779],[3390,3332,3278,3226,3176,2525],[3299,3242,3188,3136,2950,2273],[3210,3153,3098,3047,2672,2089],[3120,3063,3009,2836,2563,2073],[3031,2977,2942,2750,2484,2034],[3035,3036,2840,2649,2407,2001],[3124,2931,2744,2571,2346,1979],[2890,2621,2374,2111,1829,1409],[2576,2335,2119,1875,1607,1234],[2265,2055,1862,1629,1379,1036],[1970,1778,1614,1395,1158,845],[1697,1519,1373,1176,954,663],[1439,1276,1150,971,761,486]],
+                7000: [[3220,3169,3120,3074,3029,2986],[3140,3089,3040,2993,2949,2906],[3059,3008,2960,2913,2868,2713],[2979,2928,2879,2833,2788,2507],[2899,2848,2799,2753,2708,2290],[2819,2768,2719,2673,2629,2069],[2739,2688,2639,2593,2432,1850],[2659,2608,2560,2514,2190,1689],[2579,2528,2480,2330,2094,1672],[2500,2451,2419,2252,2023,1635],[2500,2498,2328,2162,1953,1602],[2572,2405,2242,2092,1897,1580],[2357,2124,1909,1682,1437,1075],[2084,1874,1687,1474,1243,920],[1813,1630,1461,1259,1042,745],[1556,1388,1244,1053,848,576],[1317,1160,1032,860,666,415],[1090,947,835,679,496,256]],
+                8000: [[2742,2696,2652,2610,2569,2530],[2670,2623,2579,2537,2497,2458],[2597,2551,2507,2464,2424,2286],[2524,2478,2434,2392,2351,2103],[2451,2405,2361,2319,2278,1911],[2379,2332,2288,2246,2206,1714],[2306,2260,2215,2173,2031,1519],[2233,2187,2143,2100,1816,1375],[2160,2114,2070,1936,1728,1357],[2088,2043,2013,1865,1662,1321],[2084,2081,1930,1783,1597,1288],[2144,1995,1851,1717,1544,1265],[1942,1735,1544,1343,1126,806],[1698,1512,1345,1156,951,666],[1456,1294,1143,963,770,508],[1227,1076,948,778,595,354],[1013,872,757,603,431,207],[809,680,579,439,275,63]]
+            };
+
+            weights.forEach(w => {
+                let valueAltitude = new Map();
+                alts.forEach((a, idx) => {
+                    let valueISA = new Map();
+                    isaKeys.forEach((k, kidx) => valueISA.set(k, rawROC[w][idx][kidx]));
+                    valueAltitude.set(a, valueISA);
+                });
+                table.set(w, valueAltitude);
+            });
+        }
+
+        function buildTimeFuelDistanceTables() {
+            let weights = [6000, 7000, 8000];
+            let alts = [0,2000,4000,6000,8000,10000,12000,14000,16000,18000,20000,22000,24000,26000,28000,30000,32000,34000];
+            let isaKeys = [-20, 0, 20];
+
+            // let rawTime = {
+            //     6000: [[0,0,0],[0.533,0.55,0.567],[1.067,1.1,1.133],[1.617,1.667,1.717],[2.183,2.25,2.317],[2.767,2.867,2.95],[3.367,3.483,3.6],[3.983,4.117,4.317],[4.617,4.767,5.083],[5.267,5.433,5.867],[5.917,6.133,6.683],[6.567,6.85,7.533],[7.233,7.633,8.5],[0,8.533,9.667],[0,9.533,11.017],[0,10.7,12.6],[0,12.033,14.517],[0,13.633,16.883]],
+            //     7000: [[0,0,0],[0.633,0.65,0.667],[1.267,1.317,1.35],[1.933,2,2.067],[2.617,2.7,2.8],[3.317,3.433,3.55],[4.033,4.183,4.333],[4.783,4.95,5.2],[5.55,5.733,6.133],[6.333,6.55,7.1],[7.133,7.4,8.117],[7.917,8.283,9.15],[8.733,9.25,10.383],[0,10.367,11.883],[0,11.633,13.633],[0,13.133,15.783],[0,14.9,18.467],[0,17.067,21.983]],
+            //     8000: [[0,0,0],[0.733,0.767,0.783],[1.5,1.55,1.6],[2.283,2.367,2.433],[3.083,3.2,3.3],[3.917,4.05,4.2],[4.767,4.95,5.15],[5.65,5.867,6.183],[6.567,6.817,7.317],[7.5,7.8,8.5],[8.467,8.8,9.717],[9.4,9.867,11],[10.383,11.05,12.533],[0,12.45,14.467],[0,14.067,16.817],[0,16,19.8],[0,18.367,23.8],[0,21.417,29.767]]
+            // };
+
+            // let rawFuel = {
+            //     6000: [[0,0,0],[1,1,1],[2,2,2],[2,3,3],[3,3,4],[4,4,4],[5,5,5],[6,6,6],[6,7,7],[7,8,8],[8,9,9],[9,9,10],[10,10,11],[0,11,12],[0,12,13],[0,13,15],[0,15,16],[0,16,18]],
+            //     7000: [[0,0,0],[1,1,1],[2,2,2],[3,3,3],[4,4,4],[5,5,5],[6,6,6],[7,7,8],[8,8,9],[9,9,10],[10,10,11],[11,11,12],[12,12,14],[0,14,15],[0,15,17],[0,16,18],[0,18,20],[0,20,23]],
+            //     8000: [[0,0,0],[1,1,1],[2,2,3],[3,4,4],[5,5,5],[6,6,6],[7,7,8],[8,8,9],[9,10,11],[10,11,12],[12,12,13],[13,14,15],[14,15,16],[0,16,18],[0,18,20],[0,20,23],[0,22,26],[0,24,30]]
+            // };
+
+            // let rawDist = {
+            //     6000: [[0,0,0],[1,1,1],[3,3,3],[4,4,5],[6,6,7],[7,8,8],[9,10,10],[11,12,13],[13,14,15],[15,16,18],[17,18,21],[19,21,24],[21,24,28],[0,27,32],[0,30,37],[0,35,43],[0,40,51],[0,47,61]],
+            //     7000: [[0,0,0],[2,2,2],[3,3,4],[5,5,6],[7,7,8],[9,10,10],[11,12,13],[13,14,16],[16,17,19],[18,20,22],[21,22,26],[23,26,30],[26,29,34],[0,33,39],[0,37,46],[0,43,54],[0,50,65],[0,59,80]],
+            //     8000: [[0,0,0],[2,2,2],[4,4,4],[6,6,7],[8,9,9],[10,11,12],[13,14,15],[16,17,19],[18,20,22],[22,23,26],[25,27,31],[28,31,36],[31,35,41],[0,40,48],[0,45,57],[0,53,69],[0,62,85],[0,74,110]]
+            // };
+
+            let rawTime = {
+                6000: [[0,0,0],[0.533,0.55,0.567],[1.067,1.1,1.133],[1.617,1.667,1.717],[2.183,2.25,2.317],[2.767,2.867,2.95],[3.367,3.483,3.6],[3.983,4.117,4.317],[4.617,4.767,5.083],[5.267,5.433,5.867],[5.917,6.133,6.683],[6.567,6.85,7.533],[7.233,7.633,8.5],[7.733,8.533,9.667],[8.25,9.533,11.017],[9.083,10.7,12.6],[9.967,12.033,14.517],[11.017,13.633,16.883]],
+                7000: [[0,0,0],[0.633,0.65,0.667],[1.267,1.317,1.35],[1.933,2,2.067],[2.617,2.7,2.8],[3.317,3.433,3.55],[4.033,4.183,4.333],[4.783,4.95,5.2],[5.55,5.733,6.133],[6.333,6.55,7.1],[7.133,7.4,8.117],[7.917,8.283,9.15],[8.733,9.25,10.383],[9.333,10.367,11.883],[9.933,11.633,13.633],[10.933,13.133,15.783],[12.017,14.9,18.467],[13.25,17.067,21.983]],
+                8000: [[0,0,0],[0.733,0.767,0.783],[1.5,1.55,1.6],[2.283,2.367,2.433],[3.083,3.2,3.3],[3.917,4.05,4.2],[4.767,4.95,5.15],[5.65,5.867,6.183],[6.567,6.817,7.317],[7.5,7.8,8.5],[8.467,8.8,9.717],[9.4,9.867,11],[10.383,11.05,12.533],[11.067,12.45,14.467],[11.767,14.067,16.817],[12.933,16,19.8],[14.167,18.367,23.8],[15.417,21.417,29.767]]
+            };
+
+            let rawFuel = {
+                6000: [[0,0,0],[1,1,1],[2,2,2],[2,3,3],[3,3,4],[4,4,4],[5,5,5],[6,6,6],[6,7,7],[7,8,8],[8,9,9],[9,9,10],[10,10,11],[10.5,11,12],[11.0,12,13],[11.7,13,15],[13.2,15,16],[15.0,16,18]],
+                7000: [[0,0,0],[1,1,1],[2,2,2],[3,3,3],[4,4,4],[5,5,5],[6,6,6],[7,7,8],[8,8,9],[9,9,10],[10,10,11],[11,11,12],[12,12,14],[12.8,14,15],[13.7,15,17],[14.2,16,18],[15.5,18,20],[17.0,20,23]],
+                8000: [[0,0,0],[1,1,1],[2,2,3],[3,4,4],[5,5,5],[6,6,6],[7,7,8],[8,8,9],[9,10,11],[10,11,12],[12,12,13],[13,14,15],[14,15,16],[15,16,18],[16,18,20],[17,20,23],[18,22,26],[20,24,30]]
+            };
+
+            let rawDist = {
+                6000: [[0,0,0],[1,1,1],[3,3,3],[4,4,5],[6,6,7],[7,8,8],[9,10,10],[11,12,13],[13,14,15],[15,16,18],[17,18,21],[19,21,24],[21,24,28],[22.5,27,32],[24,30,37],[27,35,43],[29.6,40,51],[33,47,61]],
+                7000: [[0,0,0],[2,2,2],[3,3,4],[5,5,6],[7,7,8],[9,10,10],[11,12,13],[13,14,16],[16,17,19],[18,20,22],[21,22,26],[23,26,30],[26,29,34],[27.8,33,39],[29.6,37,46],[32.3,43,54],[35,50,65],[38,59,80]],
+                8000: [[0,0,0],[2,2,2],[4,4,4],[6,6,7],[8,9,9],[10,11,12],[13,14,15],[16,17,19],[18,20,22],[22,23,26],[25,27,31],[28,31,36],[31,35,41],[32.6,40,48],[34.2,45,57],[37.1,53,69],[39.1,62,85],[42,74,110]]
+            };
+
+            weights.forEach(w => {
+                let vTimeSec = new Map(), vFuelSec = new Map(), vDistSec = new Map();
+                alts.forEach((a, idx) => {
+                    let vTimeTer = new Map(), vFuelTer = new Map(), vDistTer = new Map();
+                    isaKeys.forEach((k, kidx) => {
+                        vTimeTer.set(k, rawTime[w][idx][kidx]);
+                        vFuelTer.set(k, rawFuel[w][idx][kidx]);
+                        vDistTer.set(k, rawDist[w][idx][kidx]);
+                    });
+                    vTimeSec.set(a, vTimeTer);
+                    vFuelSec.set(a, vFuelTer);
+                    vDistSec.set(a, vDistTer);
+                });
+                tableTimeToClimb.set(w, vTimeSec);
+                tableFuelToClimb.set(w, vFuelSec);
+                tableDistanceToClimb.set(w, vDistSec);
+            });
+        }
+
+        function buildMaxCruisePerformanceTables(table) {
+            let alts = [24000, 26000, 28000, 30000, 32000, 34000];
+            let rawMax = {
+                24000: [[-20,[83.3,71,241,331]],[-10,[83.3,72,231,325]],[-5,[83.3,73,226,321]],[0,[81.1,72,222,319]],[5,[77.9,69,219,318]],[10,[74.8,67,217,319]],[20,[67.7,63,201,302]],[30,[58.3,57,190,291]]],
+                26000: [[-10,[83.3,72,230,334]],[-5,[80.6,70,223,328]],[0,[77.2,68,217,323]],[5,[74.0,66,211,317]],[10,[71.3,64,205,312]],[20,[65.0,60,198,308]],[30,[56.5,54,189,300]]],
+                28000: [[-10,[77.8,67,220,331]],[-5,[74.8,65,213,324]],[0,[71.7,63,208,320]],[5,[68.8,61,203,316]],[10,[65.9,60,196,309]],[20,[60.3,56,191,308]],[30,[52.5,51,182,299]]],
+                30000: [[-10,[72.0,62,211,328]],[-5,[69.4,61,205,323]],[0,[66.3,59,201,321]],[5,[63.8,57,195,315]],[10,[61.0,55,189,309]],[20,[55.9,52,183,306]],[30,[48.5,47,175,298]]],
+                32000: [[-5,[64.6,57,199,325]],[0,[61.3,54,194,321]],[5,[58.9,53,189,316]],[10,[56.3,51,184,312]],[20,[51.7,48,178,308]],[30,[44.8,43,169,299]]],
+                34000: [[0,[56.6,50,188,322]],[5,[54.2,49,183,318]],[10,[51.8,47,177,311]],[20,[47.4,44,170,306]],[30,[41.3,40,162,298]]]
+            };
+            let valueAltitude = new Map();
+            alts.forEach(a => {
+                let valueISA = new Map();
+                rawMax[a].forEach(item => valueISA.set(item[0], item[1]));
+                valueAltitude.set(a, valueISA);
+            });
+            table.set(8000, valueAltitude);
+        }
+
+        function buildNormalCruisePerformanceTables(table) {
+            let alts = [0,2000,4000,6000,8000,10000,12000,14000,16000,18000,20000,22000,24000,26000,28000,30000,32000,34000];
+            let rawNorm = {
+                0: [[-30,[83.3,91,250,237]],[-20,[83.3,92,250,241]],[-10,[83.3,93,250,246]],[-5,[83.3,94,250,248]],[0,[83.3,94,250,250]],[5,[83.3,95,250,252]],[10,[83.3,95,250,254]],[20,[83.3,96,250,259]],[30,[83.3,98,250,263]]],
+                2000: [[-30,[83.3,88,250,243]],[-20,[83.3,89,250,248]],[-10,[83.3,90,250,253]],[-5,[83.3,91,250,255]],[0,[83.3,91,250,257]],[5,[83.3,92,250,259]],[10,[83.3,92,250,262]],[20,[83.3,93,250,266]],[30,[83.3,94,250,270]]],
+                4000: [[-30,[83.3,86,250,250]],[-20,[83.3,87,250,255]],[-10,[83.3,88,250,260]],[-5,[83.3,88,250,262]],[0,[83.3,89,250,265]],[5,[83.3,89,250,267]],[10,[83.3,89,250,269]],[20,[83.3,90,250,274]],[30,[83.3,91,244,272]]],
+                6000: [[-30,[83.3,83,250,257]],[-20,[83.3,84,250,262]],[-10,[83.3,85,250,267]],[-5,[83.3,86,250,270]],[0,[83.3,86,250,272]],[5,[83.3,86,250,275]],[10,[83.3,87,250,277]],[20,[83.3,88,250,282]],[30,[83.3,89,238,273]]],
+                8000: [[-30,[83.3,81,250,264]],[-20,[83.3,82,250,270]],[-10,[83.3,83,250,275]],[-5,[83.3,83,250,278]],[0,[83.3,84,250,280]],[5,[83.3,84,250,283]],[10,[83.3,85,250,285]],[20,[83.3,85,247,287]],[30,[81.6,85,232,274]]],
+                10000: [[-30,[83.3,79,250,272]],[-20,[83.3,80,250,278]],[-10,[83.3,81,250,283]],[-5,[83.3,81,250,286]],[0,[83.3,81,250,289]],[5,[83.3,82,250,291]],[10,[83.3,82,250,294]],[20,[83.3,83,241,289]],[30,[78.6,81,226,276]]],
+                12000: [[-30,[83.3,78,245,275]],[-20,[83.3,79,245,280]],[-10,[83.3,79,245,286]],[-5,[83.3,80,245,289]],[0,[83.3,80,245,292]],[5,[83.3,81,245,294]],[10,[83.3,81,245,297]],[20,[83.3,82,235,290]],[30,[75.7,78,220,277]]],
+                14000: [[-30,[83.3,77,245,283]],[-20,[83.3,77,245,289]],[-10,[83.3,78,245,295]],[-5,[83.3,78,245,298]],[0,[83.3,79,245,300]],[5,[83.3,79,245,303]],[10,[83.3,80,243,304]],[20,[83.3,81,229,292]],[30,[72.5,74,214,278]]],
+                16000: [[-30,[83.3,75,245,291]],[-20,[83.3,76,245,297]],[-10,[83.3,77,245,304]],[-5,[83.3,77,245,307]],[0,[83.3,77,245,310]],[5,[83.3,78,243,310]],[10,[83.3,78,236,304]],[20,[81.5,78,223,293]],[30,[69,70,206,276]]],
+                18000: [[-30,[83.3,74,245,300]],[-20,[83.3,74,245,306]],[-10,[83.3,75,245,313]],[-5,[83.3,76,245,316]],[0,[83.3,76,242,316]],[5,[83.3,77,236,311]],[10,[83.3,77,229,305]],[20,[76.9,73,216,294]],[30,[65.7,66,203,281]]],
+                20000: [[-30,[83.3,73,245,309]],[-20,[83.3,73,245,316]],[-10,[83.3,74,245,323]],[-5,[83.3,74,240,320]],[0,[83.3,75,234,315]],[5,[83.3,75,229,312]],[10,[81.7,75,222,305]],[20,[72.8,69,210,295]],[30,[62.2,62,198,284]]],
+                22000: [[-20,[83.3,72,245,326]],[-10,[83.3,73,238,324]],[-5,[83.3,74,232,319]],[0,[83.3,74,226,314]],[5,[80.6,72,220,310]],[10,[77,70,215,306]],[20,[68.8,65,204,296]],[30,[58.7,58,192,285]]],
+                24000: [[-20,[83.3,71,241,331]],[-10,[83.3,72,230,323]],[-5,[82.1,72,224,319]],[0,[78.9,70,219,315]],[5,[76,68,214,311]],[10,[72.7,66,209,307]],[20,[65.1,61,197,296]],[30,[55.4,55,187,287]]],
+                26000: [[-10,[79.9,69,221,321]],[-5,[76.8,67,216,318]],[0,[73.6,65,211,314]],[5,[70.8,63,206,310]],[10,[67.9,62,201,306]],[20,[60.9,57,191,297]],[30,[51.8,51,181,288]]],
+                28000: [[-10,[74.3,65,213,320]],[-5,[71.3,63,208,317]],[0,[68.4,61,204,314]],[5,[65.6,59,199,310]],[10,[63,57,194,306]],[20,[56.5,53,184,297]],[30,[48,47,175,288]]],
+                30000: [[-10,[69,60,205,319]],[-5,[66.2,58,201,317]],[0,[63.4,56,196,313]],[5,[60.7,55,192,310]],[10,[58.2,53,187,306]],[20,[52.3,49,178,297]],[30,[44.3,44,169,289]]],
+                32000: [[-5,[61.2,54,193,315]],[0,[58.7,52,189,313]],[5,[56.1,51,185,310]],[10,[53.6,49,180,305]],[20,[48.3,46,172,297]],[30,[40.9,41,164,291]]],
+                34000: [[0,[54.1,49,181,311]],[5,[51.7,47,177,308]],[10,[49.3,45,173,304]],[20,[44.6,42,166,294]],[30,[37.5,38,158,291]]]
+            };
+            let valueAltitude = new Map();
+            alts.forEach(a => {
+                let valueISA = new Map();
+                rawNorm[a].forEach(item => valueISA.set(item[0], item[1]));
+                valueAltitude.set(a, valueISA);
+            });
+            table.set(8000, valueAltitude);
+        }
+
+        function buildEconomyCruisePerformanceTables(table) {
+            let alts = [0,2000,4000,6000,8000,10000,12000,14000,16000,18000,20000,22000,24000,26000,28000,30000,32000,34000];
+            let rawEcon = {
+                0: [[-30,[18.8,46,137,130]],[-20,[19.3,47,137,132]],[-10,[19.7,48,137,135]],[-5,[19.8,48,137,136]],[0,[20,48,137,137]],[5,[20.2,49,137,138]]],
+                2000: [[-30,[19.5,45,137,133]],[-20,[19.9,45,137,136]],[-10,[20.3,46,137,139]],[-5,[20.4,46,137,140]],[0,[20.6,47,137,141]],[5,[20.8,47,137,142]]],
+                4000: [[-30,[20.1,43,137,137]],[-20,[20.5,44,137,140]],[-10,[20.8,45,137,143]],[-5,[21.1,45,137,144]],[0,[21.3,45,137,145]],[5,[21.4,46,137,147]]],
+                6000: [[-30,[20.7,42,137,141]],[-20,[21.1,43,137,144]],[-10,[21.5,43,137,147]],[-5,[21.7,44,137,148]],[0,[21.9,44,137,150]],[5,[22.1,44,137,151]]],
+                8000: [[-30,[21.3,41,137,145]],[-20,[21.8,41,137,148]],[-10,[22.2,42,137,151]],[-5,[22.3,42,137,153]],[0,[22.6,43,137,154]],[5,[22.8,43,137,156]]],
+                10000: [[-30,[21.9,39,137,150]],[-20,[22.4,40,137,153]],[-10,[22.8,41,137,156]],[-5,[23.1,41,137,158]],[0,[23.3,42,137,159]],[5,[23.5,42,137,161]]],
+                12000: [[-30,[22.7,39,137,154]],[-20,[23.1,39,137,158]],[-10,[23.6,40,137,161]],[-5,[23.8,41,137,162]],[0,[24,41,137,164]],[5,[24.3,41,137,166]]],
+                14000: [[-30,[23.3,38,137,159]],[-20,[23.8,39,137,163]],[-10,[24.3,40,137,166]],[-5,[24.6,40,137,168]],[0,[24.8,40,137,169]],[5,[25.1,41,137,171]]],
+                16000: [[-30,[24.1,37,137,164]],[-20,[24.6,38,137,168]],[-10,[25.2,39,137,171]],[-5,[25.4,39,137,173]],[0,[25.6,39,137,175]],[5,[25.9,40,137,176]]],
+                18000: [[-30,[24.8,36,137,169]],[-20,[25.4,37,137,173]],[-10,[26,38,137,177]],[-5,[26.3,38,137,179]],[0,[26.4,39,137,181]],[5,[26.8,39,137,182]]],
+                20000: [[-30,[25.7,35,137,175]],[-20,[26.3,36,137,179]],[-10,[26.8,37,137,183]],[-5,[27.1,37,137,185]],[0,[27.3,38,137,187]],[5,[27.7,38,137,188]]],
+                22000: [[-20,[27.2,35,137,185]],[-10,[27.8,36,137,189]],[-5,[28,36,137,191]],[0,[28.3,37,137,193]],[5,[28.6,37,137,195]]],
+                24000: [[-20,[28.1,34,137,191]],[-10,[28.7,35,137,195]],[-5,[29,36,137,197]],[0,[29.3,36,137,199]],[5,[29.6,36,137,201]]],
+                26000: [[-10,[29.7,35,137,202]],[-5,[30.1,35,137,204]],[0,[30.3,35,137,206]],[5,[30.7,36,137,209]]],
+                28000: [[-10,[30.8,34,137,209]],[-5,[31.2,35,137,211]],[0,[31.4,35,137,214]],[5,[31.8,36,137,216]]],
+                30000: [[-10,[31.9,34,137,216]],[-5,[32.3,34,137,219]],[0,[32.6,35,137,221]],[5,[33,35,137,224]]],
+                32000: [[-5,[33.5,34,137,227]],[0,[33.8,35,137,229]],[5,[34.3,35,137,232]]],
+                34000: [[0,[35.2,35,137,238]],[5,[35.6,35,137,240]]]
+            };
+            let valueAltitude = new Map();
+            alts.forEach(a => {
+                let valueISA = new Map();
+                rawEcon[a].forEach(item => valueISA.set(item[0], item[1]));
+                valueAltitude.set(a, valueISA);
+            });
+            table.set(8000, valueAltitude);
+        }
+
+        function buildLandingPerformanceTables(tableTOGR, tableTOD50, tableFULLGR, tableFULLD50) {
+            let weights = [5600, 6600, 7600];
+            let alts = [0, 2000, 4000, 6000, 8000, 10000];
+            let isaKeys = [-55, -40, -30, -20, -10, 0, 10, 20, 30, 40];
+
+            let rawLandTOGR = {
+                5600: [[792,843,877,911,945,979,1013,1047,1081,1115],[838,893,929,966,1002,1039,1076,1112,1149,1185],[887,946,985,1024,1064,1103,1142,1182,1221,1260],[939,1002,1045,1087,1130,1172,1214,1257,1299,1342],[994,1063,1109,1154,1200,1246,1292,1338,1383,1429],[1075,1151,1201,1252,1302,1353,1403,1453,1504,1554]],
+                6600: [[1100,1171,1218,1266,1313,1360,1407,1454,1502,1549],[1164,1240,1291,1341,1392,1443,1494,1545,1595,1646],[1231,1313,1368,1423,1477,1532,1587,1641,1696,1751],[1304,1392,1451,1510,1569,1628,1687,1746,1805,1864],[1381,1477,1540,1604,1667,1731,1795,1858,1922,1985],[1494,1599,1669,1739,1809,1879,1949,2019,2089,2159]],
+                7600: [[1460,1554,1616,1679,1741,1804,1867,1929,1992,2054],[1543,1644,1711,1778,1846,1913,1980,2048,2115,2182],[1632,1741,1814,1886,1959,2031,2103,2176,2248,2321],[1728,1846,1924,2002,2080,2158,2236,2314,2392,2470],[1831,1958,2042,2126,2211,2295,2379,2464,2548,2632],[1981,2120,2213,2306,2399,2492,2585,2678,2770,2863]]
+            };
+
+            let rawLandTOD50 = {
+                5600: [[1328,1398,1445,1492,1539,1587,1634,1682,1730,1778],[1389,1464,1515,1565,1616,1667,1718,1770,1821,1873],[1455,1536,1590,1645,1699,1754,1809,1864,1920,1975],[1526,1613,1672,1730,1789,1848,1907,1967,2026,2086],[1602,1696,1759,1823,1886,1950,2014,2078,2142,2206],[1719,1822,1892,1961,2031,2101,2172,2242,2313,2384]],
+                6600: [[1928,2028,2095,2162,2230,2298,2366,2435,2504,2573],[2017,2125,2197,2269,2342,2415,2489,2562,2636,2859],[2113,2229,2307,2385,2463,2542,2621,2700,2779,2859],[2217,2342,2425,2510,2594,2679,2764,2849,2935,3021],[2329,2463,2554,2645,2736,2827,2919,3011,3103,3196],[2498,2647,2747,2847,2947,3048,3149,3250,3352,3454]],
+                7600: [[2661,2797,2889,2981,3073,3166,3260,3353,3447,3541],[2784,2931,3029,3128,3228,3327,3428,3528,3629,3730],[2917,3075,3182,3288,3395,3503,3611,3719,3827,3936],[3061,3232,3346,3461,3577,3692,3809,3925,4043,4160],[3217,3401,3525,3649,3774,3899,4024,4150,4276,4403],[3453,3657,3793,3930,4067,4205,4343,4482,4622,4761]]
+            };
+
+            let rawLandFULLGR = {
+                5600: [[558,594,618,642,666,690,714,738,762,786],[590,629,655,680,706,732,758,784,809,835],[625,666,694,722,749,777,805,832,860,888],[662,706,736,766,796,826,856,886,916,946],[701,749,781,814,846,878,910,942,975,1007],[758,812,847,883,918,954,989,1025,1060,1096]],
+                6600: [[776,826,859,892,926,959,992,1026,1059,1092],[820,874,910,945,981,1017,1053,1089,1124,1160],[868,926,964,1003,1041,1080,1119,1157,1196,1234],[919,981,1022,1064,1105,1147,1189,1230,1272,1313],[974,1041,1086,1130,1175,1220,1265,1310,1354,1399],[1053,1127,1176,1225,1275,1324,1373,1423,1472,1521]],
+                7600: [[1028,1095,1139,1183,1227,1271,1315,1359,1403,1447],[1087,1158,1206,1253,1301,1348,1395,1443,1490,1538],[1151,1228,1279,1330,1381,1432,1483,1534,1585,1636],[1218,1301,1356,1411,1466,1521,1576,1631,1686,1741],[1290,1379,1439,1498,1558,1617,1676,1736,1795,1855],[1396,1495,1560,1626,1691,1756,1822,1887,1953,2018]]
+            };
+
+            let rawLandFULLD50 = {
+                5600: [[1032,1081,1114,1147,1180,1213,1246,1280,1314,1347],[1074,1127,1162,1197,1233,1268,1304,1340,1377,1413],[1120,1176,1214,1252,1290,1329,1367,1406,1445,1484],[1169,1230,1271,1312,1353,1394,1436,1478,1519,1562],[1222,1288,1332,1376,1420,1465,1510,1555,1600,1645],[1306,1378,1427,1476,1524,1574,1623,1672,1722,1772]],
+                6600: [[1493,1562,1609,1655,1702,1750,1797,1845,1893,1942],[1554,1628,1678,1729,1779,1830,1881,1933,1984,2036],[1621,1701,1755,1809,1863,1918,1973,2029,2084,2140],[1692,1779,1837,1895,1954,2013,2072,2132,2191,2251],[1771,1864,1926,1989,2053,2116,2180,2245,2309,2374],[1892,1995,2064,2133,2203,2273,2343,2414,2485,255]],
+                7600: [[2051,2145,2208,2271,2335,2399,2464,2529,2594,2659],[2136,2237,2305,2373,2442,2511,2580,2650,2720,2790],[2229,2338,2411,2484,2558,2633,2707,2782,2858,2934],[2329,2446,2525,2604,2684,2764,2844,2925,3007,3088],[2437,2563,2648,2734,2820,2906,2993,3081,3168,3256],[2606,2746,2840,2934,3029,3124,3220,3317,3413,3510]]
+            };
+
+            weights.forEach(w => {
+                let vTOGR = new Map(), vTOD50 = new Map(), vFULLGR = new Map(), vFULLD50 = new Map();
+                alts.forEach((a, idx) => {
+                    let vTOGR_isa = new Map(), vTOD50_isa = new Map(), vFULLGR_isa = new Map(), vFULLD50_isa = new Map();
+                    isaKeys.forEach((k, kidx) => {
+                        vTOGR_isa.set(k, rawLandTOGR[w][idx][kidx]);
+                        vTOD50_isa.set(k, rawLandTOD50[w][idx][kidx]);
+                        vFULLGR_isa.set(k, rawLandFULLGR[w][idx][kidx]);
+                        vFULLD50_isa.set(k, rawLandFULLD50[w][idx][kidx]);
+                    });
+                    vTOGR.set(a, vTOGR_isa);
+                    vTOD50.set(a, vTOD50_isa);
+                    vFULLGR.set(a, vFULLGR_isa);
+                    vFULLD50.set(a, vFULLD50_isa);
+                });
+                tableTOGR.set(w, vTOGR);
+                tableTOD50.set(w, vTOD50);
+                tableFULLGR.set(w, vFULLGR);
+                tableFULLD50.set(w, vFULLD50);
+            });
+        }
+
+        function buildTakeoffPowerTables(table) {
+            const takeoffMaxPerformanceMap = {
+                "-25": [14, []],
+                "-24": [14, []],
+                "-22": [14, []],
+                "-20": [14, []],
+                "-18": [13, [99.5]],
+                "-16": [13, [98.3]],
+                "-14": [13, [97.1]],
+                "-12": [11, [99.7, 95.8]],
+                "-10": [11, [98.4, 94.6]],
+                "-8":  [11, [97.2, 93.5]],
+                "-6":  [10, [99.9, 96.1, 92.3]],
+                "-4":  [10, [98.7, 94.9, 91.2]],
+                "-2":  [10, [97.6, 93.8, 90.1]],
+                "0":   [9,  [99.9, 96.1, 92.4, 88.7]],
+                "2":   [9,  [98.4, 94.7, 91.0, 87.4]],
+                "4":   [9,  [96.8, 93.1, 89.5, 86.0]],
+                "6":   [8,  [99.2, 95.4, 91.8, 88.4, 84.9]],
+                "8":   [8,  [97.9, 94.2, 90.5, 87.0, 83.5]],
+                "10":  [8,  [96.5, 92.8, 89.2, 85.7, 82.0]],
+                "12":  [7,  [98.8, 95.0, 91.4, 87.8, 84.2, 80.1]],
+                "14":  [7,  [97.2, 93.5, 89.9, 86.1, 81.7, 77.6]],
+                "16":  [6,  [98.9, 95.1, 91.4, 87.5, 83.3, 79.2, 75.3]],
+                "18":  [6,  [96.9, 93.2, 89.3, 85.0, 80.9, 76.9, 73.1]],
+                "20":  [5,  [98.7, 95.0, 91.1, 86.8, 82.6, 78.7, 74.9, 71.1]],
+                "22":  [5,  [96.9, 92.9, 88.6, 84.5, 80.5, 76.8, 73.1, 69.1]],
+                "24":  [4,  [98.9, 94.9, 90.6, 86.6, 82.2, 78.3, 74.4, 70.6, 66.9]],
+                "26":  [4,  [97.0, 92.6, 88.2, 84.0, 79.8, 75.8, 72.0, 68.3, 64.7]],
+                "28":  [3,  [98.7, 94.2, 89.8, 85.5, 81.4, 77.3, 73.4, 69.7, 66.0, 62.5]],
+                "30":  [3,  [95.7, 91.3, 87.0, 82.8, 78.8, 74.8, 71.0, 67.3, 63.8]],
+                "32":  [3,  [97.2, 92.8, 88.5, 84.3, 80.2, 76.2, 72.4, 68.7, 65.1]],
+                "34":  [2,  [98.8, 94.1, 89.9, 85.7, 81.6, 77.7, 73.8, 70.0, 66.4]],
+                "36":  [2,  [95.7, 91.4, 87.1, 83.0, 79.0, 75.1, 71.4, 67.7]],
+                "38":  [1,  [97.1, 92.7, 88.5, 84.4, 80.4, 76.5, 72.6, 68.9]],
+                "40":  [0,  [98.5, 94.1, 89.9, 85.7, 81.7, 77.7, 73.9, 70.2]],
+                "42":  [0,  [95.2, 91.1, 86.9, 82.9, 78.9, 75.1, 71.4]],
+                "44":  [0,  [92.1, 88.1, 83.9, 79.9, 76.1, 72.3]],
+                "46":  [0,  [89.2, 85.2, 81.0, 77.2, 73.5]],
+                "48":  [0,  [85.9, 82.0, 78.2, 74.5]],
+                "49":  [0,  [84.7, 80.6, 77.1]]
+            };
+
+            for (let oat of tableTakeoffOATKeys) {
+                // Create an empty row filled with nulls (out of envelope areas) corresponding to the 14 columns
+                let row = new Array(14).fill(null);
+                let [startIndex, dropOffValues] = takeoffMaxPerformanceMap[oat.toString()];
+                
+                // Fill the max performance (100.0) up to the drop-off index
+                for (let i = 0; i < startIndex; i++) {
+                    row[i] = 100.0;
+                }
+                
+                // Splice in the dropping performance values
+                for (let i = 0; i < dropOffValues.length; i++) {
+                    row[startIndex + i] = dropOffValues[i];
+                }
+                table.push(row);
+            }
+        }
+
+        function buildClimbPowerTables(table) {
+            const climbMaxPerformanceMap = {
+                "-54": [24, [83.2, 79.6, 76.0, 72.4, 68.9, 65.4, 62.2, 59.3, 56.5, 53.8, 51.1]],
+                "-52": [24, [83.2, 78.7, 74.9, 71.3, 67.8, 64.5, 61.5, 58.7, 55.8, 53.0, 50.3]],
+                "-50": [24, [81.2, 77.6, 73.8, 70.2, 66.9, 63.8, 60.8, 57.8, 55.0, 52.2, 49.5]],
+                "-48": [24, [80.0, 76.5, 72.8, 69.3, 66.1, 62.9, 59.9, 57.0, 54.1, 51.4, 48.8]],
+                "-46": [24, [78.9, 75.4, 71.8, 68.4, 65.2, 62.1, 59.0, 56.1, 53.3, 50.6, 48.0]],
+                "-44": [23, [82.2, 77.8, 74.2, 70.8, 67.5, 64.3, 61.1, 58.2, 55.3, 52.5, 49.9, 47.2]],
+                "-42": [23, [80.7, 76.4, 73.2, 69.8, 66.6, 63.4, 60.3, 57.3, 54.5, 51.7, 49.1, 46.4]],
+                "-40": [22, [83.0, 79.3, 75.4, 72.2, 68.9, 65.6, 62.5, 59.4, 56.5, 53.7, 50.9, 48.1, 45.6]],
+                "-38": [22, [81.6, 78.3, 74.4, 71.3, 67.9, 64.7, 61.6, 58.6, 55.7, 52.8, 50.0, 47.4, 44.8]],
+                "-36": [22, [80.6, 77.3, 73.4, 70.3, 67.0, 63.8, 60.7, 57.7, 54.8, 52.0, 49.2, 46.6, 44.2]],
+                "-34": [21, [82.8, 79.5, 76.2, 72.4, 69.4, 66.1, 62.9, 59.8, 56.8, 53.9, 51.2, 48.4, 45.9, 43.4]],
+                "-32": [21, [81.8, 78.5, 75.3, 71.5, 68.4, 65.2, 61.9, 58.9, 55.9, 53.1, 50.4, 47.7, 45.2, 42.4]],
+                "-30": [21, [80.7, 77.4, 74.2, 70.5, 67.5, 64.2, 61.0, 58.0, 55.1, 52.3, 49.6, 46.9, 44.1, 41.2]],
+                "-28": [20, [83.0, 79.7, 76.4, 73.1, 69.4, 66.5, 63.4, 60.2, 57.2, 54.3, 51.4, 48.6, 45.7, 42.9, 40.1]],
+                "-26": [20, [81.9, 78.6, 75.4, 72.2, 68.5, 65.6, 62.5, 59.3, 56.3, 53.4, 50.3, 47.5, 44.5, 41.7, 39.1]],
+                "-24": [20, [80.9, 77.6, 74.4, 71.3, 67.7, 64.7, 61.5, 58.3, 55.3, 52.2, 49.2, 46.2, 43.5, 40.7, 37.6]],
+                "-22": [19, [83.2, 79.8, 76.6, 73.3, 70.4, 66.7, 63.7, 60.5, 57.3, 54.1, 51.0, 48.0, 45.1, 42.2, 39.1, 36.1]],
+                "-20": [19, [82.1, 78.8, 75.6, 72.5, 69.4, 65.7, 62.6, 59.3, 56.0, 52.9, 49.8, 46.8, 43.9, 40.6, 37.6, 34.8]],
+                "-18": [19, [81.1, 77.8, 74.6, 71.4, 68.2, 64.5, 61.4, 57.9, 54.8, 51.6, 48.6, 45.6, 42.2, 39.1, 36.3, 33.7]],
+                "-16": [19, [80.0, 76.7, 73.4, 70.1, 66.9, 63.0, 60.0, 56.8, 53.6, 50.4, 47.1, 43.8, 40.6, 37.7, 35.0, 32.2]],
+                "-14": [18, [82.1, 78.8, 75.5, 71.9, 68.7, 65.5, 61.9, 58.8, 55.5, 52.3, 48.8, 45.4, 42.2, 39.3, 36.5, 33.5, 30.7]],
+                "-12": [18, [80.7, 77.5, 74.0, 70.7, 67.5, 64.4, 60.7, 57.5, 54.1, 50.5, 47.0, 43.8, 40.8, 37.9, 35.0, 32.1]],
+                "-10": [17, [82.9, 79.5, 76.1, 72.7, 69.6, 66.3, 63.1, 59.3, 56.0, 52.2, 48.7, 45.5, 42.4, 39.5, 36.4, 33.6]],
+                "-8":  [17, [81.6, 78.3, 74.9, 71.5, 68.3, 65.0, 61.5, 57.5, 54.0, 50.5, 47.2, 44.1, 41.0, 37.9, 34.8]],
+                "-6":  [17, [80.4, 76.9, 73.6, 70.3, 67.0, 63.1, 59.4, 55.6, 52.2, 48.9, 45.8, 42.6, 39.4, 36.4]],
+                "-4":  [16, [82.5, 79.0, 75.6, 72.3, 68.8, 64.8, 61.1, 57.5, 53.8, 50.6, 47.5, 44.2, 40.9, 37.8]],
+                "-2":  [16, [81.2, 77.7, 74.2, 70.4, 66.5, 62.7, 59.2, 55.9, 52.2, 49.2, 45.8, 42.5, 39.3]],
+                "0":   [15, [83.2, 79.5, 75.9, 72.2, 68.2, 64.5, 60.9, 57.5, 54.3, 50.7, 47.4, 44.0, 40.9]],
+                "2":   [15, [81.3, 77.7, 74.0, 70.0, 66.3, 62.7, 59.1, 55.9, 52.5, 48.9, 45.7, 42.4]],
+                "4":   [14, [83.0, 79.6, 75.8, 71.9, 68.1, 64.5, 61.0, 57.5, 54.0, 50.7, 47.1, 44.0]],
+                "6":   [14, [81.3, 77.7, 73.7, 69.9, 66.4, 62.7, 59.0, 55.5, 52.1, 48.9, 45.4]],
+                "8":   [13, [83.1, 79.5, 75.7, 71.8, 68.2, 64.3, 60.6, 57.0, 53.6, 50.3, 47.1]],
+                "10":  [13, [81.3, 77.3, 73.7, 69.8, 65.9, 62.2, 58.6, 55.1, 51.8, 48.5]],
+                "12":  [12, [83.1, 79.2, 75.3, 71.5, 67.6, 63.8, 60.1, 56.6, 53.2, 49.9]],
+                "14":  [12, [80.9, 76.9, 73.0, 69.2, 65.4, 61.7, 58.1, 54.7, 51.4]],
+                "16":  [11, [82.4, 78.4, 74.5, 70.7, 67.0, 63.2, 59.6, 56.2, 52.8]],
+                "18":  [11, [79.9, 75.9, 72.1, 68.4, 64.8, 61.2, 57.6, 54.3]],
+                "20":  [10, [81.4, 77.4, 73.5, 69.8, 66.2, 62.7, 59.1, 55.7]],
+                "22":  [9,  [82.9, 78.9, 75.0, 71.2, 67.6, 64.2, 60.6, 57.0]],
+                "24":  [8,  [80.3, 76.4, 72.6, 69.1, 65.4, 61.8, 58.4]],
+                "26":  [7,  [81.8, 77.8, 74.0, 70.3, 66.5, 63.0, 59.6]],
+                "28":  [7,  [79.3, 75.4, 71.4, 67.8, 64.3, 60.9]],
+                "30":  [6,  [80.7, 76.6, 72.7, 69.0, 65.5, 62.1]],
+                "32":  [6,  [81.9, 77.9, 74.0, 70.3, 66.8, 63.4]],
+                "34":  [5,  [83.2, 79.2, 75.3, 71.6, 68.0, 64.6]],
+                "36":  [5,  [80.5, 76.6, 72.9, 69.5, 66.0]],
+                "38":  [4,  [81.9, 78.1, 74.3, 70.7, 67.2]],
+                "40":  [3,  [83.1, 79.3, 75.3, 71.9, 68.4]],
+                "42":  [3,  [80.3, 76.6, 73.0, 69.5]],
+                "44":  [2,  [81.4, 77.7, 74.1, 70.5]],
+                "46":  [1,  [82.3, 78.7, 75.0, 71.1]],
+                "48":  [1,  [79.1, 75.4, 71.7]],
+                "49":  [1,  [77.5, 73.8]]
+            };
+
+            for (let oat of tableOATKeys) {
+                // Create an empty row filled with nulls (out of envelope areas) corresponding to the 35 columns
+                let row = new Array(35).fill(null);
+                let [startIndex, dropOffValues] = climbMaxPerformanceMap[oat.toString()];
+                
+                // Fill the max performance (83.3) up to the drop-off index
+                for (let i = 0; i < startIndex; i++) {
+                    row[i] = 83.3;
+                }
+                
+                // Splice in the dropping performance values
+                for (let i = 0; i < dropOffValues.length; i++) {
+                    row[startIndex + i] = dropOffValues[i];
+                }            
+                table.push(row);
+            }
+        }
+
+        function buildCruisePowerTables(maxTable, normTable, econTable) {
+            //Max Cruise Power Settings
+            const cruiseMaxPerformanceMap = {
+                "-54": [28, [80.2, 75.8, 71.7, 68.0, 64.4, 60.8, 57.5]],
+                "-52": [28, [78.8, 74.5, 70.6, 66.9, 63.3, 59.8, 56.5]],
+                "-50": [27, [81.8, 77.3, 73.3, 69.5, 65.8, 62.2, 58.8, 55.5]],
+                "-48": [27, [80.2, 76.1, 72.2, 68.3, 64.7, 61.2, 57.8, 54.6]],
+                "-46": [26, [83.2, 79.0, 74.9, 71.0, 67.2, 63.6, 60.2, 56.8, 53.6]],
+                "-44": [26, [81.8, 77.7, 73.7, 69.8, 66.1, 62.6, 59.1, 55.9, 52.7]],
+                "-42": [26, [80.6, 76.5, 72.5, 68.7, 65.0, 61.6, 58.2, 54.9, 51.7]],
+                "-40": [26, [79.3, 75.2, 71.3, 67.6, 64.0, 60.5, 57.1, 53.8, 50.8]],
+                "-38": [25, [82.2, 78.0, 74.1, 70.2, 66.5, 62.9, 59.4, 56.1, 52.9, 49.9]],
+                "-36": [24, [83.0, 80.9, 76.8, 72.9, 69.0, 65.3, 61.8, 58.4, 55.1, 52.0, 49.0]],
+                "-34": [24, [81.7, 79.6, 75.5, 71.7, 67.8, 64.2, 60.7, 57.4, 54.2, 51.1, 48.2]],
+                "-32": [23, [82.5, 80.4, 78.4, 74.3, 70.4, 66.7, 63.1, 59.7, 56.4, 53.3, 50.3, 47.4]],
+                "-30": [23, [81.1, 79.1, 77.1, 73.2, 69.4, 65.6, 62.1, 58.8, 55.6, 52.4, 49.4, 46.1]],
+                "-28": [23, [79.9, 77.9, 75.9, 72.0, 68.3, 64.7, 61.2, 57.8, 54.6, 51.5, 48.0, 44.7]],
+                "-26": [22, [82.4, 78.6, 76.7, 74.8, 70.9, 67.2, 63.6, 60.2, 56.9, 53.5, 50.0, 46.7, 43.5]],
+                "-24": [22, [80.9, 77.2, 75.4, 73.6, 69.8, 66.1, 62.6, 59.1, 55.7, 52.0, 48.6, 45.4, 42.3]],
+                "-22": [22, [79.5, 75.8, 74.1, 72.4, 68.6, 65.0, 61.4, 57.8, 54.1, 50.6, 47.4, 44.2, 41.1]],
+                "-20": [21, [81.9, 78.0, 74.3, 72.7, 71.2, 67.4, 63.7, 60.0, 56.3, 52.7, 49.4, 46.1, 42.7, 39.3]],
+                "-18": [21, [80.3, 76.5, 72.8, 71.3, 69.9, 66.0, 62.2, 58.5, 54.8, 51.4, 48.0, 44.5, 41.1, 37.9]],
+                "-16": [20, [82.8, 79.0, 75.1, 71.3, 69.9, 68.5, 64.6, 60.7, 57.1, 53.5, 50.1, 46.3, 42.8, 39.6, 36.5]],
+                "-14": [20, [81.2, 77.3, 73.6, 69.9, 68.5, 67.1, 63.1, 59.3, 55.6, 52.0, 48.1, 44.6, 41.3, 38.2, 35.2]],
+                "-12": [20, [79.6, 75.8, 72.1, 68.3, 66.9, 65.5, 61.6, 57.8, 54.0, 50.0, 46.4, 43.1, 39.9, 36.8]],
+                "-10": [19, [81.9, 78.0, 73.8, 70.1, 66.3, 64.9, 63.9, 60.0, 55.9, 52.0, 48.3, 44.9, 41.6, 38.4]],
+                "-8":  [19, [79.8, 75.9, 72.0, 68.2, 64.2, 63.1, 62.2, 57.9, 54.0, 50.2, 46.7, 43.5, 40.1]],
+                "-6":  [18, [81.8, 77.9, 74.0, 70.2, 66.0, 62.2, 61.2, 60.0, 56.0, 52.2, 48.6, 45.3, 41.8]],
+                "-4":  [18, [79.8, 76.0, 72.1, 68.0, 64.1, 60.3, 59.2, 58.1, 54.2, 50.6, 47.1, 43.6]],
+                "-2":  [17, [82.0, 78.1, 74.1, 69.9, 66.0, 62.3, 58.5, 57.3, 56.3, 52.6, 49.0, 45.4]],
+                "0":   [17, [80.6, 76.2, 72.0, 68.1, 64.0, 60.2, 56.4, 55.5, 54.7, 50.9, 47.2]],
+                "2":   [16, [82.3, 78.3, 74.1, 70.0, 65.8, 61.9, 58.1, 54.5, 53.6, 52.8, 49.0]],
+                "4":   [16, [80.5, 76.1, 71.6, 67.7, 63.7, 59.8, 56.1, 52.5, 51.7, 51.0]],
+                "6":   [15, [82.5, 78.0, 73.6, 69.5, 65.4, 61.5, 57.7, 54.1, 50.6, 49.8]],
+                "8":   [15, [80.0, 75.5, 71.3, 67.2, 63.2, 59.3, 55.7, 52.1, 48.6]],
+                "10":  [14, [81.7, 77.4, 73.1, 68.9, 64.9, 61.0, 57.3, 53.7, 50.2]],
+                "12":  [14, [79.1, 74.9, 70.7, 66.6, 62.7, 58.9, 55.4, 51.8]],
+                "14":  [13, [80.8, 76.5, 72.5, 68.3, 64.4, 60.5, 56.8, 53.3]],
+                "16":  [12, [82.4, 78.2, 74.0, 70.1, 66.0, 62.2, 58.5, 54.7]],
+                "18":  [12, [79.8, 75.6, 71.6, 67.7, 63.8, 59.9, 56.2]],
+                "20":  [11, [81.4, 77.4, 73.1, 69.3, 65.5, 61.5, 57.8]],
+                "22":  [11, [78.8, 74.7, 70.5, 66.7, 63.0, 59.3]],
+                "24":  [10, [81.1, 76.0, 71.9, 68.1, 64.4, 60.8]],
+                "26":  [9, [82.7, 78.6, 73.4, 69.5, 65.8, 62.2]],
+                "28":  [9, [80.2, 76.3, 70.9, 67.1, 63.6]],
+                "30":  [8, [81.8, 77.7, 73.8, 68.8, 64.8]],
+                "32":  [7, [82.7, 79.1, 75.4, 71.7, 66.2]],
+                "34":  [7, [80.3, 76.8, 73.2, 69.5]],
+                "36":  [6, [81.8, 78.0, 74.3, 70.7]],
+                "38":  [5, [82.9, 79.4, 75.3, 71.7]],
+                "40":  [5, [80.1, 76.3, 72.6]],
+                "42":  [4, [80.9, 77.2, 73.5]],
+                "44":  [3, [81.6, 77.9, 74.3]],
+                "46":  [2, [82.0, 78.3, 74.7]],
+                "48":  [1, [82.5, 78.8, 75.2]],
+                "49":  [1, [80.9, 77.3]]
+            }
+
+            for (let oat of tableOATKeys) {
+                // Create an empty row filled with nulls (out of envelope areas)
+                let row = new Array(35).fill(null);
+                let [startIndex, dropOffValues] = cruiseMaxPerformanceMap[oat.toString()];
+                
+                // Fill the max performance (83.3) up to the drop-off index
+                for (let i = 0; i < startIndex; i++) {
+                    row[i] = 83.3;
+                }
+                
+                // Splice in the dropping performance values
+                for (let i = 0; i < dropOffValues.length; i++) {
+                    row[startIndex + i] = dropOffValues[i];
+                }
+                maxTable.push(row);
+            }
+
+            //Normal Cruise Power Settings
+            const cruiseNormalPerformanceMap = {
+                "-54": [27, [81.8, 77.2, 72.9, 68.8, 65.1, 61.6, 58.2, 54.9]],
+                "-52": [27, [80.1, 75.6, 71.4, 67.6, 64.0, 60.5, 57.1, 54.0]],
+                "-50": [26, [83.1, 78.4, 74.1, 70.2, 66.5, 62.9, 59.5, 56.2, 53.0]],
+                "-48": [26, [81.2, 76.8, 72.9, 69.0, 65.4, 61.9, 58.4, 55.2, 52.1]],
+                "-46": [26, [79.6, 75.6, 71.6, 68.0, 64.3, 60.8, 57.5, 54.2, 51.0]],
+                "-44": [25, [82.6, 78.4, 74.4, 70.5, 66.8, 63.2, 59.7, 56.3, 53.2, 50.1]],
+                "-42": [25, [81.2, 77.1, 73.1, 69.3, 65.6, 62.0, 58.6, 55.4, 52.2, 49.2]],
+                "-40": [25, [79.9, 75.9, 71.9, 68.1, 64.4, 60.9, 57.6, 54.4, 51.3, 48.3]],
+                "-38": [24, [82.5, 78.6, 74.5, 70.6, 67.0, 63.4, 60.0, 56.6, 53.5, 50.5, 47.5]],
+                "-36": [24, [81.2, 77.4, 73.4, 69.6, 65.9, 62.3, 59.0, 55.8, 52.6, 49.5, 46.6]],
+                "-34": [24, [79.9, 76.2, 72.3, 68.4, 64.9, 61.4, 58.0, 54.8, 51.6, 48.4, 45.4]],
+                "-32": [23, [82.5, 78.7, 75.0, 71.1, 67.4, 63.9, 60.4, 56.9, 53.6, 50.3, 47.3, 44.3]],
+                "-30": [23, [81.1, 77.4, 73.8, 70.0, 66.3, 62.8, 59.2, 55.7, 52.4, 49.2, 46.2, 43.1]],
+                "-28": [23, [79.9, 76.2, 72.6, 68.9, 65.1, 61.4, 57.8, 54.4, 51.1, 48.1, 45.0, 41.9]],
+                "-26": [22, [82.4, 78.6, 74.9, 71.4, 67.6, 63.6, 60.0, 56.5, 53.2, 50.0, 46.8, 43.7, 40.4]],
+                "-24": [22, [80.9, 77.2, 73.6, 70.0, 66.0, 62.1, 58.7, 55.3, 52.1, 48.7, 45.5, 42.0, 38.8]],
+                "-22": [22, [79.5, 75.8, 72.3, 68.4, 64.6, 60.9, 57.4, 54.1, 50.7, 47.3, 43.7, 40.4, 37.3]],
+                "-20": [21, [81.9, 78.0, 74.3, 70.5, 67.0, 63.4, 59.7, 56.2, 52.7, 49.0, 45.4, 42.1, 38.9, 36.1]],
+                "-18": [21, [80.3, 76.5, 72.8, 69.2, 65.7, 61.9, 58.3, 54.7, 50.8, 47.2, 43.8, 40.6, 37.6, 34.5]],
+                "-16": [20, [82.8, 79.0, 75.1, 71.3, 67.7, 64.2, 60.5, 56.5, 52.6, 49.0, 45.5, 42.3, 39.2, 36.1, 33.0]],
+                "-14": [20, [81.2, 77.3, 73.6, 69.9, 66.3, 62.6, 58.5, 54.5, 50.9, 47.4, 44.0, 40.8, 37.7, 34.5, 31.6]],
+                "-12": [20, [79.6, 75.8, 72.1, 68.3, 64.4, 60.5, 56.5, 52.7, 49.2, 45.8, 42.5, 39.2, 36.1, 33.1]],
+                "-10": [19, [81.9, 78.0, 73.8, 70.1, 66.3, 62.3, 58.5, 54.7, 51.0, 47.7, 44.2, 40.9, 37.6, 34.6]],
+                "-8":  [19, [79.8, 75.9, 72.0, 68.2, 64.2, 60.3, 56.7, 53.0, 49.4, 45.9, 42.5, 39.2, 36.1]],
+                "-6":  [18, [81.8, 77.9, 74.0, 70.2, 66.0, 62.2, 58.5, 54.9, 51.3, 47.6, 44.2, 40.8, 37.6]],
+                "-4":  [18, [79.8, 76.0, 72.1, 68.0, 64.1, 60.3, 56.7, 53.2, 49.4, 45.8, 42.5, 39.2]],
+                "-2":  [17, [82.0, 78.1, 74.1, 69.9, 66.0, 62.3, 58.5, 54.8, 51.3, 47.7, 44.0, 40.8]],
+                "0":   [17, [80.6, 76.2, 72.0, 68.1, 64.0, 60.2, 56.4, 52.8, 49.3, 45.8, 42.4]],
+                "2":   [16, [82.3, 78.3, 74.1, 70.0, 65.8, 61.9, 58.1, 54.5, 50.9, 47.6, 44.0]],
+                "4":   [16, [80.5, 76.1, 71.6, 67.7, 63.7, 59.8, 56.1, 52.5, 49.0, 45.8]],
+                "6":   [15, [82.5, 78.0, 73.6, 69.5, 65.4, 61.5, 57.7, 54.1, 50.6, 47.2]],
+                "8":   [15, [80.0, 75.5, 71.3, 67.2, 63.2, 59.3, 55.7, 52.1, 48.6]],
+                "10":  [14, [81.7, 77.4, 73.1, 68.9, 64.9, 61.0, 57.3, 53.7, 50.2]],
+                "12":  [14, [79.1, 74.9, 70.7, 66.6, 62.7, 58.9, 55.4, 51.8]],
+                "14":  [13, [80.8, 76.5, 72.5, 68.3, 64.4, 60.5, 56.8, 53.3]],
+                "16":  [12, [82.4, 78.2, 74.0, 70.1, 66.0, 62.2, 58.5, 54.7]],
+                "18":  [12, [79.8, 75.6, 71.6, 67.7, 63.8, 59.9, 56.2]],
+                "20":  [11, [81.4, 77.4, 73.1, 69.3, 65.5, 61.5, 57.8]],
+                "22":  [11, [78.8, 74.7, 70.5, 66.7, 63.0, 59.3]],
+                "24":  [10, [81.1, 76.0, 71.9, 68.1, 64.4, 60.8]],
+                "26":  [9,  [82.7, 78.6, 73.4, 69.5, 65.8, 62.2]],
+                "28":  [9,  [80.2, 76.3, 70.9, 67.1, 63.6]],
+                "30":  [8,  [81.8, 77.7, 73.8, 68.8, 64.8]],
+                "32":  [7,  [82.7, 79.1, 75.4, 71.7, 66.2]],
+                "34":  [7,  [80.3, 76.8, 73.2, 69.5]],
+                "36":  [6,  [81.8, 78.0, 74.3, 70.7]],
+                "38":  [5,  [82.9, 79.4, 75.3, 71.7]],
+                "40":  [5,  [80.1, 76.3, 72.6]],
+                "42":  [4,  [80.9, 77.2, 73.5]],
+                "44":  [3,  [81.6, 77.9, 74.3]],
+                "46":  [2,  [82.0, 78.3, 74.7]],
+                "48":  [1,  [82.5, 78.8, 75.2]],
+                "49":  [1,  [80.9, 77.3]]
+            };
+
+            for (let oat of tableOATKeys) {
+                // Create an empty row filled with nulls (out of envelope areas)
+                let row = new Array(35).fill(null);
+                let [startIndex, dropOffValues] = cruiseNormalPerformanceMap[oat.toString()];
+                
+                // Fill the max performance (83.3) up to the drop-off index
+                for (let i = 0; i < startIndex; i++) {
+                    row[i] = 83.3;
+                }
+                
+                // Splice in the dropping performance values
+                for (let i = 0; i < dropOffValues.length; i++) {
+                    row[startIndex + i] = dropOffValues[i];
+                }
+                normTable.push(row);
+            }
+
+            //Economy Cruise Power Settings
+            const cruiseEconomyPerformanceMap = {
+                "-54": [0, [17.5, 17.8, 18.1, 18.4, 18.8, 19.1, 19.5, 19.9, 20.3, 20.7, 21.1, 21.5, 21.9, 22.3, 22.8, 23.2, 23.7, 24.2, 24.7, 25.2, 25.8, 26.3, 26.9, 27.4, 28.0, 28.7, 29.3, 30.0, 30.6, 31.3, 32.0, 32.8, 33.5, 34.3, 35.2]],
+                "-52": [0, [17.5, 17.9, 18.2, 18.5, 18.9, 19.2, 19.6, 20.0, 20.4, 20.7, 21.2, 21.6, 22.0, 22.4, 22.9, 23.3, 23.8, 24.3, 24.8, 25.3, 25.9, 26.4, 27.0, 27.6, 28.2, 28.8, 29.4, 30.1, 30.8, 31.5, 32.2, 32.9, 33.7, 34.5, 35.3]],
+                "-50": [0, [17.6, 17.9, 18.3, 18.6, 19.0, 19.3, 19.7, 20.1, 20.4, 20.8, 21.2, 21.7, 22.1, 22.5, 23.0, 23.5, 23.9, 24.4, 24.9, 25.5, 26.0, 26.5, 27.1, 27.7, 28.3, 28.9, 29.6, 30.2, 30.9, 31.6, 32.3, 33.1, 33.9, 34.7, 35.5]],
+                "-48": [0, [17.7, 18.0, 18.4, 18.7, 19.0, 19.4, 19.8, 20.1, 20.5, 20.9, 21.3, 21.8, 22.2, 22.6, 23.1, 23.6, 24.0, 24.5, 25.0, 25.6, 26.1, 26.7, 27.2, 27.8, 28.4, 29.1, 29.7, 30.4, 31.0, 31.7, 32.4, 33.2, 34.0, 34.8, 35.6]],
+                "-46": [0, [17.8, 18.1, 18.4, 18.8, 19.1, 19.5, 19.9, 20.2, 20.6, 21.0, 21.4, 21.9, 22.3, 22.7, 23.2, 23.7, 24.1, 24.6, 25.2, 25.7, 26.2, 26.8, 27.4, 27.9, 28.6, 29.2, 29.8, 30.5, 31.2, 31.9, 32.6, 33.4, 34.2, 35.0, 35.8]],
+                "-44": [0, [17.9, 18.2, 18.5, 18.9, 19.2, 19.6, 19.9, 20.3, 20.7, 21.1, 21.5, 22.0, 22.4, 22.8, 23.3, 23.8, 24.3, 24.8, 25.3, 25.8, 26.3, 26.9, 27.5, 28.1, 28.7, 29.3, 30.0, 30.6, 31.3, 32.0, 32.8, 33.5, 34.3, 35.1, 35.9]],
+                "-42": [0, [17.9, 18.3, 18.6, 18.9, 19.3, 19.7, 20.0, 20.4, 20.8, 21.2, 21.6, 22.1, 22.5, 22.9, 23.4, 23.9, 24.4, 24.9, 25.4, 25.9, 26.5, 27.0, 27.6, 28.2, 28.8, 29.4, 30.1, 30.8, 31.5, 32.2, 32.9, 33.7, 34.5, 35.3, 36.1]],
+                "-40": [0, [18.0, 18.3, 18.7, 19.0, 19.4, 19.7, 20.1, 20.5, 20.9, 21.3, 21.7, 22.1, 22.6, 23.0, 23.5, 24.0, 24.5, 25.0, 25.5, 26.0, 26.6, 27.1, 27.7, 28.3, 28.9, 29.6, 30.2, 30.9, 31.6, 32.3, 33.1, 33.8, 34.6, 35.4, 36.3]],
+                "-38": [0, [18.1, 18.4, 18.8, 19.1, 19.5, 19.8, 20.2, 20.6, 21.0, 21.4, 21.8, 22.2, 22.7, 23.1, 23.6, 24.1, 24.6, 25.1, 25.6, 26.1, 26.7, 27.2, 27.8, 28.4, 29.1, 29.7, 30.3, 31.0, 31.7, 32.4, 33.2, 34.0, 34.8, 35.6, 36.4]],
+                "-36": [0, [18.2, 18.5, 18.8, 19.2, 19.5, 19.9, 20.3, 20.7, 21.1, 21.5, 21.9, 22.3, 22.8, 23.2, 23.7, 24.2, 24.7, 25.2, 25.7, 26.2, 26.8, 27.4, 28.0, 28.6, 29.2, 29.8, 30.5, 31.2, 31.9, 32.6, 33.3, 34.1, 34.9, 35.7, 36.6]],
+                "-34": [0, [18.2, 18.6, 18.9, 19.3, 19.6, 20.0, 20.4, 20.8, 21.2, 21.6, 22.0, 22.4, 22.9, 23.3, 23.8, 24.3, 24.8, 25.3, 25.8, 26.4, 26.9, 27.5, 28.1, 28.7, 29.3, 29.9, 30.6, 31.3, 32.0, 32.7, 33.5, 34.2, 35.0, 35.9, 36.7]],
+                "-32": [0, [18.3, 18.7, 19.0, 19.3, 19.7, 20.1, 20.5, 20.9, 21.3, 21.7, 22.1, 22.5, 23.0, 23.4, 23.9, 24.4, 24.9, 25.4, 25.9, 26.5, 27.0, 27.6, 28.2, 28.8, 29.4, 30.1, 30.7, 31.4, 32.1, 32.9, 33.6, 34.4, 35.2, 36.0, 36.9]],
+                "-30": [0, [18.4, 18.7, 19.1, 19.4, 19.8, 20.2, 20.5, 20.9, 21.3, 21.8, 22.2, 22.6, 23.1, 23.5, 24.0, 24.5, 25.0, 25.5, 26.0, 26.6, 27.1, 27.7, 28.3, 28.9, 29.5, 30.2, 30.9, 31.6, 32.3, 33.0, 33.8, 34.5, 35.3, 36.2, 37.0]],
+                "-28": [0, [18.5, 18.8, 19.2, 19.5, 19.9, 20.2, 20.6, 21.0, 21.4, 21.8, 22.3, 22.7, 23.2, 23.6, 24.1, 24.6, 25.1, 25.6, 26.1, 26.7, 27.2, 27.8, 28.4, 29.0, 29.7, 30.3, 31.0, 31.7, 32.4, 33.1, 33.9, 34.7, 35.5, 36.3, 37.2]],
+                "-26": [0, [18.5, 18.9, 19.2, 19.6, 20.0, 20.3, 20.7, 21.1, 21.5, 21.9, 22.4, 22.8, 23.3, 23.7, 24.2, 24.7, 25.2, 25.7, 26.2, 26.8, 27.4, 27.9, 28.5, 29.2, 29.8, 30.4, 31.1, 31.8, 32.5, 33.3, 34.0, 34.8, 35.6, 36.5, 37.3]],
+                "-24": [0, [18.6, 19.0, 19.3, 19.7, 20.0, 20.4, 20.8, 21.2, 21.6, 22.0, 22.5, 22.9, 23.3, 23.8, 24.3, 24.8, 25.3, 25.8, 26.3, 26.9, 27.5, 28.0, 28.6, 29.3, 29.9, 30.6, 31.2, 31.9, 32.7, 33.4, 34.2, 35.0, 35.8, 36.6, 37.5]],
+                "-22": [0, [18.7, 19.0, 19.4, 19.7, 20.1, 20.5, 20.9, 21.3, 21.7, 22.1, 22.5, 23.0, 23.4, 23.9, 24.4, 24.9, 25.4, 25.9, 26.5, 27.0, 27.6, 28.2, 28.8, 29.4, 30.0, 30.7, 31.4, 32.1, 32.8, 33.5, 34.3, 35.1, 35.9, 36.8, 36.4]],
+                "-20": [0, [18.8, 19.1, 19.5, 19.8, 20.2, 20.6, 21.0, 21.4, 21.8, 22.2, 22.6, 23.1, 23.5, 24.0, 24.5, 25.0, 25.5, 26.0, 26.6, 27.1, 27.7, 28.3, 28.9, 29.5, 30.1, 30.8, 31.5, 32.2, 32.9, 33.7, 34.4, 35.2, 36.1, 36.9, 35.0]],
+                "-18": [0, [18.8, 19.2, 19.5, 19.9, 20.3, 20.7, 21.0, 21.4, 21.9, 22.3, 22.7, 23.2, 23.6, 24.1, 24.6, 25.1, 25.6, 26.1, 26.7, 27.2, 27.8, 28.4, 29.0, 29.6, 30.3, 30.9, 31.6, 32.3, 33.0, 33.8, 34.6, 35.4, 36.2, 36.5, 33.8]],
+                "-16": [0, [18.9, 19.3, 19.6, 20.0, 20.4, 20.7, 21.1, 21.5, 21.9, 22.4, 22.8, 23.3, 23.7, 24.2, 24.7, 25.2, 25.7, 26.2, 26.8, 27.3, 27.9, 28.5, 29.1, 29.7, 30.4, 31.0, 31.7, 32.4, 33.2, 33.9, 34.7, 35.5, 36.3, 35.2, 32.4]],
+                "-14": [0, [19.0, 19.3, 19.7, 20.1, 20.4, 20.8, 21.2, 21.6, 22.0, 22.5, 22.9, 23.3, 23.8, 24.3, 24.8, 25.3, 25.8, 26.3, 26.9, 27.4, 28.0, 28.6, 29.2, 29.9, 30.5, 31.2, 31.9, 32.6, 33.3, 34.1, 34.8, 35.7, 36.5, 33.8, 31.0]],
+                "-12": [0, [19.1, 19.4, 19.8, 20.1, 20.5, 20.9, 21.3, 21.7, 22.1, 22.5, 23.0, 23.4, 23.9, 24.4, 24.9, 25.4, 25.9, 26.4, 27.0, 27.5, 28.1, 28.7, 29.3, 30.0, 30.6, 31.3, 32.0, 32.7, 33.4, 34.2, 35.0, 35.8, 35.2, 32.4]],
+                "-10": [0, [19.1, 19.5, 19.8, 20.2, 20.6, 21.0, 21.4, 21.8, 22.2, 22.6, 23.1, 23.5, 24.0, 24.5, 25.0, 25.5, 26.0, 26.5, 27.1, 27.6, 28.2, 28.8, 29.4, 30.1, 30.7, 31.4, 32.1, 32.8, 33.6, 34.3, 35.1, 35.9, 33.9]],
+                "-8":  [0, [19.2, 19.6, 19.9, 20.3, 20.7, 21.1, 21.5, 21.9, 22.3, 22.7, 23.2, 23.6, 24.1, 24.6, 25.1, 25.6, 26.1, 26.6, 27.2, 27.7, 28.3, 28.9, 29.6, 30.2, 30.9, 31.5, 32.2, 32.9, 33.7, 34.5, 35.2, 35.2]],
+                "-6":  [0, [19.3, 19.6, 20.0, 20.4, 20.7, 21.1, 21.5, 21.9, 22.4, 22.8, 23.2, 23.7, 24.2, 24.7, 25.2, 25.7, 26.2, 26.7, 27.3, 27.9, 28.4, 29.0, 29.7, 30.3, 31.0, 31.6, 32.3, 33.1, 33.8, 34.6, 35.4]],
+                "-4":  [0, [19.4, 19.7, 20.1, 20.4, 20.8, 21.2, 21.6, 22.0, 22.5, 22.9, 23.3, 23.8, 24.3, 24.8, 25.3, 25.8, 26.3, 26.8, 27.4, 28.0, 28.6, 29.2, 29.8, 30.4, 31.1, 31.8, 32.5, 33.2, 33.9, 34.7]],
+                "-2":  [0, [19.4, 19.8, 20.1, 20.5, 20.9, 21.3, 21.7, 22.1, 22.5, 23.0, 23.4, 23.9, 24.4, 24.8, 25.3, 25.9, 26.4, 26.9, 27.5, 28.1, 28.7, 29.3, 29.9, 30.5, 31.2, 31.9, 32.6, 33.3, 34.1]],
+                "0":   [0, [19.5, 19.9, 20.2, 20.6, 21.0, 21.4, 21.8, 22.2, 22.6, 23.1, 23.5, 24.0, 24.4, 24.9, 25.4, 25.9, 26.5, 27.0, 27.6, 28.2, 28.8, 29.4, 30.0, 30.6, 31.3, 32.0, 32.7, 33.4]],
+                "2":   [0, [19.6, 19.9, 20.3, 20.7, 21.1, 21.4, 21.9, 22.3, 22.7, 23.1, 23.6, 24.1, 24.5, 25.0, 25.5, 26.0, 26.6, 27.1, 27.7, 28.3, 28.9, 29.5, 30.1, 30.8, 31.4, 32.1, 32.8]],
+                "4":   [0, [19.6, 20.0, 20.4, 20.7, 21.1, 21.5, 21.9, 22.4, 22.8, 23.2, 23.7, 24.1, 24.6, 25.1, 25.6, 26.1, 26.7, 27.2, 27.8, 28.4, 29.0, 29.6, 30.2, 30.9, 31.5, 32.2]],
+                "6":   [0, [19.7, 20.1, 20.4, 20.8, 21.2, 21.6, 22.0, 22.4, 22.9, 23.3, 23.8, 24.3, 24.7, 25.2, 25.7, 26.2, 26.8, 27.3, 27.9, 28.5, 29.1, 29.7, 30.3, 31.0, 31.7]],
+                "8":   [0, [19.8, 20.1, 20.5, 20.9, 21.3, 21.7, 22.1, 22.5, 22.9, 23.4, 23.8, 24.3, 24.8, 25.3, 25.8, 26.3, 26.9, 27.4, 28.0, 28.6, 29.2, 29.8, 30.4, 31.1]],
+                "10":  [0, [19.8, 20.2, 20.6, 21.0, 21.4, 21.8, 22.2, 22.6, 23.0, 23.5, 23.9, 24.4, 24.9, 25.4, 25.9, 26.4, 27.0, 27.5, 28.1, 28.7, 29.3, 29.9, 30.5]],
+                "12":  [0, [19.9, 20.3, 20.7, 21.0, 21.4, 21.8, 22.2, 22.7, 23.1, 23.6, 24.0, 24.5, 25.0, 25.5, 26.0, 26.5, 27.1, 27.6, 28.2, 28.8, 29.4, 30.0]],
+                "14":  [0, [20.0, 20.4, 20.7, 21.1, 21.5, 21.9, 22.3, 22.8, 23.2, 23.6, 24.1, 24.6, 25.1, 25.6, 26.1, 26.6, 27.2, 27.7, 28.3, 28.9, 29.5]],
+                "16":  [0, [20.1, 20.4, 20.8, 21.2, 21.6, 22.0, 22.4, 22.8, 23.3, 23.7, 24.2, 24.7, 25.2, 25.7, 26.2, 26.7, 27.2, 27.8, 28.4, 29.0]],
+                "18":  [0, [20.1, 20.5, 20.9, 21.3, 21.7, 22.1, 22.5, 22.9, 23.4, 23.8, 24.3, 24.7, 25.2, 25.7, 26.3, 26.8, 27.3, 27.9, 28.5]],
+                "20":  [0, [20.2, 20.6, 20.9, 21.3, 21.7, 22.1, 22.6, 23.0, 23.4, 23.9, 24.4, 24.8, 25.3, 25.8, 26.3, 26.9, 27.4, 28.0]],
+                "22":  [0, [20.3, 20.6, 21.0, 21.4, 21.8, 22.2, 22.6, 23.1, 23.5, 24.0, 24.4, 24.9, 25.4, 25.9, 26.4, 27.0, 27.5]],
+                "24":  [0, [20.3, 20.7, 21.1, 21.5, 21.9, 22.3, 22.7, 23.1, 23.6, 24.0, 24.5, 25.0, 25.5, 26.0, 26.5, 27.1]],
+                "26":  [0, [20.4, 20.8, 21.2, 21.5, 22.0, 22.4, 22.8, 23.2, 23.7, 24.1, 24.6, 25.1, 25.6, 26.1, 26.6]],
+                "28":  [0, [20.5, 20.8, 21.2, 21.6, 22.0, 22.4, 22.9, 23.3, 23.8, 24.2, 24.7, 25.2, 25.7, 26.2]],
+                "30":  [0, [20.5, 20.9, 21.3, 21.7, 22.1, 22.5, 22.9, 23.4, 23.8, 24.3, 24.8, 25.3, 25.8]],
+                "32":  [0, [20.6, 21.0, 21.4, 21.8, 22.2, 22.6, 23.0, 23.5, 23.9, 24.4, 24.8, 25.3]],
+                "34":  [0, [20.7, 21.1, 21.4, 21.8, 22.2, 22.7, 23.1, 23.5, 24.0, 24.5, 24.9]],
+                "36":  [0, [20.7, 21.1, 21.5, 21.9, 22.3, 22.7, 23.2, 23.6, 24.1, 24.5]],
+                "38":  [0, [20.8, 21.2, 21.6, 22.0, 22.4, 22.8, 23.2, 23.7, 24.1]],
+                "40":  [0, [20.9, 21.3, 21.6, 22.0, 22.5, 22.9, 23.3, 23.8]],
+                "42":  [0, [20.9, 21.3, 21.7, 22.1, 22.5, 23.0, 23.4]],
+                "44":  [0, [21.0, 21.4, 21.8, 22.2, 22.6, 23.0]],
+                "46":  [0, [21.1, 21.5, 21.9, 22.3, 22.7]],
+                "48":  [0, [21.1, 21.5, 21.9, 22.3]],
+                "49":  [0, [21.2, 21.6, 22.0]]
+            };
+
+            for (let oat of tableOATKeys) {
+                // Create an empty row filled with nulls (out of envelope areas)
+                let row = new Array(35).fill(null);
+                let [startIndex, values] = cruiseEconomyPerformanceMap[oat.toString()];
+                
+                // Splice in the dropping performance values
+                // Since startIndex is always 0 here, it populates from the beginning of the row
+                for (let i = 0; i < values.length; i++) {
+                    row[startIndex + i] = values[i];
+                }
+                econTable.push(row);
+            }
+        }
+    </script>
+
+    <!-- Service Worker Registration for Offline Use -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => console.log('ServiceWorker registered'))
+                    .catch(error => console.log('ServiceWorker registration failed: ', error));
+            });
+        }
+    </script>
+</body>
+</html>
