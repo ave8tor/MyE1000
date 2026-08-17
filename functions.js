@@ -270,6 +270,11 @@ function isNumeric(str) {
     return !isNaN(str) && !isNaN(parseFloat(str));
 }
 
+// Function to format numbers with commas
+const formatNumber = (num) => {
+    return new Intl.NumberFormat('en-US').format(num);
+};
+
 /**
  * 1D Linear Interpolation
  */
@@ -424,6 +429,10 @@ function calculateClimb(show = true) {
     if (!isNumeric(weight) || !isNumeric(sAlt) || !isNumeric(sOAT) || !isNumeric(eAlt) || !isNumeric(eOAT)) {
         banner.style.display = "block";
         banner.innerText = "Error: Please verify all input values are valid numbers.";
+        return;
+    } else if (eAlt <= sAlt) {
+        banner.style.display = "block";
+        banner.innerText = "Error: Ending altitude must be greater than starting altitude.";
         return;
     } else { banner.style.display = "none"; }
 
@@ -606,7 +615,7 @@ function populateWeightPickers() {
     let options = '';
 
     for (let i = 8000; i >= 6000; i -= 50) {
-        options += `<option value="${i}">${i}</option>`;
+        options += `<option value="${i}">${i.toLocaleString()}</option>`;
     }
 
     weightIds.forEach(id => {
@@ -623,7 +632,12 @@ function populateAirfieldAltPickers() {
     let options = '';
 
     for (let i = 13000; i >= 0; i -= 500) {
-        options += `<option value="${i}">${i}</option>`;
+        if (i === 0) {
+            options += `<option value="0">Sea Level</option>`;
+        } else {
+            options += `<option value="${i}">${i.toLocaleString()}</option>`;
+        }
+
     }
 
     airfieldIds.forEach(id => {
@@ -639,11 +653,15 @@ function populateAltitudePickers() {
     const altitudeIds = ['pwr-alt', 'cl-startAlt', 'cl-endAlt', 'cr-alt'];
     let options = '';
     for (let i = 34000; i >= 18000; i -= 1000) {
-        options += `<option value="${i}">${i}</option>`;
+        options += `<option value="${i}">${i.toLocaleString()}</option>`;
     }
 
     for (let i = 17500; i >= 0; i -= 500) {
-        options += `<option value="${i}">${i}</option>`;
+        if (i === 0) {
+            options += `<option value="0">Sea Level</option>`;
+        } else {
+            options += `<option value="${i}">${i.toLocaleString()}</option>`;
+        }
     }
 
     altitudeIds.forEach(id => {
