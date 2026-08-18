@@ -1,10 +1,12 @@
 const CACHE_NAME = 'told-calc-cache-v1';
 // Add all files that need to be saved for offline use
 const URLS_TO_CACHE = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icon.png'
+    './',
+    './index.html',
+    './manifest.json',
+    './icon.png',
+    './tables.js',
+    './functions.js'
 ];
 
 self.addEventListener('install', event => {
