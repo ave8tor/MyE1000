@@ -92,6 +92,39 @@ function closeModal(e) {
     document.getElementById("results-modal").style.display = "none";
 }
 
+// --- Hamburger Menu & Settings Logic ---
+const hamburgerBtn = document.getElementById('hamburger-btn');
+const menuDropdown = document.getElementById('menu-dropdown');
+const ftLbCheckbox = document.getElementById('use-ft-lb');
+
+// Toggle menu visibility
+hamburgerBtn.addEventListener('click', function(e) {
+    e.stopPropagation(); // Prevent the document click listener from immediately closing it
+    menuDropdown.classList.toggle('active');
+});
+
+// Close menu when clicking outside of it
+document.addEventListener('click', function() {
+    menuDropdown.classList.remove('active');
+});
+
+// Prevent the menu from closing if you click inside it
+menuDropdown.addEventListener('click', function(e) {
+    e.stopPropagation();
+});
+
+// --- LocalStorage State Retention ---
+
+// 1. Load the saved state when the page initializes
+if (localStorage.getItem('useFtLbSetting') === 'true') {
+    ftLbCheckbox.checked = true;
+}
+
+// 2. Listen for changes and save the new state immediately
+ftLbCheckbox.addEventListener('change', function(e) {
+    localStorage.setItem('useFtLbSetting', e.target.checked);
+});
+
 // --- Tab Navigation Logic ---
 function switchTab(tabId) {
     document.querySelectorAll('.tab-content').forEach(tab => {
@@ -201,27 +234,22 @@ function resetTab(tabId) {
     inputs.forEach(input => {
         input.value = "0";
         if (input.id.includes("weight")) {
-            if (tabId === "tab-landing") {
-                input.value = "7600";
-                syncInput('weight', "7600");
-            } else {
-                input.value = "8000";
-                syncInput('weight', "8000");
-            }
+            input.value = "7600";
+            syncInput('weight', "7600");
         }
         if (input.id === "pwr-rpm" || input.id === "cr-rpm") {
             input.value = "1700";
             syncInput('propRPM', "1700");
         }
-        if (input.id.includes("pwr-alt")) syncInput('pwrAlt', "0");
-        if (input.id.includes("pwr-oat")) syncInput('pwrOAT', "0");
+        if (input.id.includes("pwr-alt")) syncInput('pwrAlt', "34000");
+        if (input.id.includes("pwr-oat")) syncInput('pwrOAT', "-52");
         if (input.id === "to-alt" || input.id === "cl-startAlt" || input.id === "ld-alt" ) syncInput('startAlt', "0");
-        if (input.id === "to-oat" || input.id === "cl-startOAT" || input.id === "ld-oat" ) syncInput('startOAT', "0");
-        if (input.id === "cl-endAlt" || input.id === "cr-alt") syncInput('endAlt', "0");
-        if (input.id === "cl-endOAT" || input.id === "cr-oat") syncInput('endOAT', "0");
-        if (input.id.includes("windDir")) syncInput('windDir', "0");
+        if (input.id === "to-oat" || input.id === "cl-startOAT" || input.id === "ld-oat" ) syncInput('startOAT', "15");
+        if (input.id === "cl-endAlt" || input.id === "cr-alt") syncInput('endAlt', "34000");
+        if (input.id === "cl-endOAT" || input.id === "cr-oat") syncInput('endOAT', "-52");
+        if (input.id.includes("windDir")) syncInput('windDir', "360");
         if (input.id.includes("windSpeed")) syncInput('windSpeed', "0");
-        if (input.id.includes("course")) syncInput('course', "0");
+        if (input.id.includes("course")) syncInput('course', "360");
         if (input.id.includes("slope")) syncInput('slope', "0");
     });
 
@@ -366,16 +394,28 @@ function calculatePower(show = true) {
         document.getElementById("res-pwr-norm").innerText = "--";
         document.getElementById("res-pwr-econ").innerText = "--";
     } else { warn.style.display = "none";
-        document.getElementById("res-pwr-alt").innerText = alt + " ft";
+        document.getElementById("res-pwr-alt").innerText = formatNumber(alt) + " ft";
         document.getElementById("res-pwr-oat").innerText = oat + "°C";
         document.getElementById("res-pwr-isa").innerText = getISAString(oat, alt);
         document.getElementById("res-pwr-prop").innerText = "Cruise Power (" + rpm + " rpm)";
         let takeoff = getBilinearInterpolation(oat, alt / 100, tableTakeoffOATKeys, tableTakeoffFLKeys, tableTakeoffPower);
-        document.getElementById("res-pwr-to").innerText = takeoff <= 0  || takeoff > 100 || alt > 13000 ? "N/A" : parseFloat(takeoff).toFixed(1) + "%";
-        document.getElementById("res-pwr-climb").innerText = parseFloat(getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableClimbPower)).toFixed(1) + "%";
-        document.getElementById("res-pwr-max").innerText = parseFloat(getAlternateTorque(getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableMaxCruisePower), rpm)).toFixed(1) + "%";
-        document.getElementById("res-pwr-norm").innerText = parseFloat(getAlternateTorque(getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableNormCruisePower), rpm)).toFixed(1) + "%";
-        document.getElementById("res-pwr-econ").innerText = parseFloat(getAlternateTorque(getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableEconCruisePower), rpm)).toFixed(1) + "%";
+        let climb = getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableClimbPower);
+        let max = getAlternateTorque(getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableMaxCruisePower), rpm);
+        let norm = getAlternateTorque(getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableNormCruisePower), rpm);
+        let econ = getAlternateTorque(getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableEconCruisePower), rpm);
+        if (ftLbCheckbox.checked) {
+            document.getElementById("res-pwr-to").innerText = takeoff <= 0  || takeoff > 3708 || alt > 13000 ? "N/A" : getFtLbTorque(parseFloat(takeoff)).toFixed(0) + " ft-lb";
+            document.getElementById("res-pwr-climb").innerText = formatNumber(getFtLbTorque(climb).toFixed(0)) + " ft-lb";
+            document.getElementById("res-pwr-max").innerText = formatNumber(getFtLbTorque(max).toFixed(0)) + " ft-lb";
+            document.getElementById("res-pwr-norm").innerText = formatNumber(getFtLbTorque(norm).toFixed(0)) + " ft-lb";
+            document.getElementById("res-pwr-econ").innerText = formatNumber(getFtLbTorque(econ).toFixed(0)) + " ft-lb";
+        } else {
+            document.getElementById("res-pwr-to").innerText = takeoff <= 0  || takeoff > 100 || alt > 13000 ? "N/A" : parseFloat(takeoff).toFixed(1) + "%";
+            document.getElementById("res-pwr-climb").innerText = parseFloat(climb).toFixed(1) + "%";
+            document.getElementById("res-pwr-max").innerText = parseFloat(max).toFixed(1) + "%";
+            document.getElementById("res-pwr-norm").innerText = parseFloat(norm).toFixed(1) + "%";
+            document.getElementById("res-pwr-econ").innerText = parseFloat(econ).toFixed(1) + "%";
+        }
     }
 
     if (show) showModal('tab-power');
@@ -392,8 +432,7 @@ function calculateTakeoff(show = true) {
     let cond = document.querySelector('input[name="to-cond"]:checked').value;
 
     let banner = document.getElementById("to-error");
-    if (!isNumeric(weight) || !isNumeric(alt) || !isNumeric(oat) || !isNumeric(windDir) ||
-        !isNumeric(windSpeed) || !isNumeric(course) || !isNumeric(slope)) {
+    if (!isNumeric(weight) || !isNumeric(alt) || !isNumeric(oat) || !isNumeric(windDir) || !isNumeric(windSpeed) || !isNumeric(course) || !isNumeric(slope)) {
         banner.style.display = "block";
         banner.innerText = "Error: Please verify all input values are valid numbers.";
         return;
@@ -405,15 +444,19 @@ function calculateTakeoff(show = true) {
     document.getElementById("res-to-hwind").innerText = windComp[3];
 
     let takeoff = getBilinearInterpolation(oat, alt / 100, tableTakeoffOATKeys, tableTakeoffFLKeys, tableTakeoffPower);
-    document.getElementById("takeoff-tq").innerText = takeoff <= 0  || takeoff > 100 ? "N/A" : parseFloat(takeoff).toFixed(1) + "%";
+    if (ftLbCheckbox.checked) {
+        document.getElementById("res-to-tq").innerText = takeoff <= 0  || takeoff > 3708 || alt > 13000 ? "N/A" : formatNumber(getFtLbTorque(parseFloat(takeoff)).toFixed(0)) + " ft-lb";
+    } else {
+        document.getElementById("res-to-tq").innerText = takeoff <= 0 || takeoff > 100 || alt > 13000 ? "N/A" : parseFloat(takeoff).toFixed(1) + "%";
+    }
 
     let data = getTakeoffPerformance(weight, alt, oat, windDir, windSpeed, course, slope, cond);
-    document.getElementById("res-to-gr").innerText = data[0] + " ft";
-    document.getElementById("res-to-d50").innerText = data[1] + " ft";
-    document.getElementById("res-to-astop").innerText = data[2] + " ft";
-    document.getElementById("res-up-gr").innerText = data[3] + " ft";
-    document.getElementById("res-up-d50").innerText = data[4] + " ft";
-    document.getElementById("res-up-astop").innerText = data[5] + " ft";
+    document.getElementById("res-to-gr").innerText = formatNumber(data[0]) + " ft";
+    document.getElementById("res-to-d50").innerText = formatNumber(data[1]) + " ft";
+    document.getElementById("res-to-astop").innerText = formatNumber(data[2]) + " ft";
+    document.getElementById("res-up-gr").innerText = formatNumber(data[3]) + " ft";
+    document.getElementById("res-up-d50").innerText = formatNumber(data[4]) + " ft";
+    document.getElementById("res-up-astop").innerText = formatNumber(data[5]) + " ft";
 
     if (show) showModal('tab-takeoff');
 }
@@ -458,10 +501,16 @@ function calculateClimb(show = true) {
         document.getElementById("res-climb-fuel").innerText = "--";
         document.getElementById("res-climb-dist").innerText = "--";
     } else { warn.style.display = "none";
-        document.getElementById("climb-tq").innerText = parseFloat(getBilinearInterpolation(sOAT, sAlt / 100, tableOATKeys, tableFLKeys, tableClimbPower)).toFixed(1) + "%";
-        document.getElementById("res-climb-sroc").innerText = sRoc + " fpm";
-        document.getElementById("res-climb-eroc").innerText = eRoc + " fpm";
-        document.getElementById("res-climb-diff").innerText = Math.round(eAlt - sAlt) + " ft";
+        let climb = getBilinearInterpolation(sOAT, sAlt / 100, tableOATKeys, tableFLKeys, tableClimbPower);
+        if (ftLbCheckbox.checked) {
+            document.getElementById("res-climb-tq").innerText = formatNumber(getFtLbTorque(climb).toFixed(0)) + " ft-lb";
+        } else {
+            document.getElementById("res-climb-tq").innerText = parseFloat(climb).toFixed(1) + "%";
+        }
+        //document.getElementById("climb-tq").innerText = parseFloat(getBilinearInterpolation(sOAT, sAlt / 100, tableOATKeys, tableFLKeys, tableClimbPower)).toFixed(1) + "%";
+        document.getElementById("res-climb-sroc").innerText = formatNumber(sRoc) + " fpm";
+        document.getElementById("res-climb-eroc").innerText = formatNumber(eRoc) + " fpm";
+        document.getElementById("res-climb-diff").innerText = formatNumber(Math.round(eAlt - sAlt)) + " ft";
         document.getElementById("res-climb-time").innerText = convertTimeToString(eTime - sTime);
         document.getElementById("res-climb-fuel").innerText = Math.round(eFuel - sFuel) + " gal";
         document.getElementById("res-climb-dist").innerText = Math.round(eDist - sDist) + " nm";
@@ -482,44 +531,62 @@ function calculateCruise(show = true) {
         return;
     } else { banner.style.display = "none"; }
 
-    let isaDelta = getISAString(oat, alt);
-    document.getElementById("res-cr-isa").innerText = isaDelta;
+    let max = getAlternateTorque(getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableMaxCruisePower), rpm);
+    let norm = getAlternateTorque(getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableNormCruisePower), rpm);
+    let econ = getAlternateTorque(getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableEconCruisePower), rpm);
+
+    document.getElementById("res-cr-isa").innerText = getISAString(oat, alt);
     document.getElementById("res-cr-rpm").innerText = rpm + " rpm";
 
     let maxC = getMaxCruisePerformance(alt, oat);
-    if (maxC == 0 || maxC == -1) {
+    if (maxC === 0 || maxC === -1) {
         document.getElementById("res-max-tq").innerText = "--";
         document.getElementById("res-max-ff").innerText = "--";
         document.getElementById("res-max-kias").innerText = "--";
         document.getElementById("res-max-ktas").innerText = "--";
     } else {
-        document.getElementById("res-max-tq").innerText = parseFloat(getAlternateTorque(getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableMaxCruisePower), rpm)).toFixed(1);
+        if (ftLbCheckbox.checked) {
+            document.getElementById("res-max-tq").innerText = formatNumber(getFtLbTorque(max).toFixed(0)) + " ft-lb";
+        } else {
+            document.getElementById("res-max-tq").innerText = parseFloat(max).toFixed(1) + "%";
+        }
+        // document.getElementById("res-max-tq").innerText = parseFloat(getAlternateTorque(getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableMaxCruisePower), rpm)).toFixed(1);
         document.getElementById("res-max-ff").innerText = maxC[1];
         document.getElementById("res-max-kias").innerText = maxC[2];
         document.getElementById("res-max-ktas").innerText = maxC[3];
     }
 
     let normC = getNormalCruisePerformance(alt, oat);
-    if (normC == -1) {
+    if (normC === -1) {
         document.getElementById("res-norm-tq").innerText = "--";
         document.getElementById("res-norm-ff").innerText = "--";
         document.getElementById("res-norm-kias").innerText = "--";
         document.getElementById("res-norm-ktas").innerText = "--";
     } else {
-        document.getElementById("res-norm-tq").innerText = parseFloat(getAlternateTorque(getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableNormCruisePower), rpm)).toFixed(1);
+        if (ftLbCheckbox.checked) {
+            document.getElementById("res-norm-tq").innerText = formatNumber(getFtLbTorque(norm).toFixed(0)) + " ft-lb";
+        } else {
+            document.getElementById("res-norm-tq").innerText = parseFloat(norm).toFixed(1) + "%";
+        }
+        // document.getElementById("res-norm-tq").innerText = parseFloat(getAlternateTorque(getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableNormCruisePower), rpm)).toFixed(1);
         document.getElementById("res-norm-ff").innerText = normC[1];
         document.getElementById("res-norm-kias").innerText = normC[2];
         document.getElementById("res-norm-ktas").innerText = normC[3];
     }
 
     let econC = getEconomyCruisePerformance(alt, oat);
-    if (econC == -1) {
+    if (econC === -1) {
         document.getElementById("res-econ-tq").innerText = "--";
         document.getElementById("res-econ-ff").innerText = "--";
         document.getElementById("res-econ-kias").innerText = "--";
         document.getElementById("res-econ-ktas").innerText = "--";
     } else {
-        document.getElementById("res-econ-tq").innerText = parseFloat(getAlternateTorque(getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableEconCruisePower), rpm)).toFixed(1);
+        if (ftLbCheckbox.checked) {
+            document.getElementById("res-econ-tq").innerText = formatNumber(getFtLbTorque(econ).toFixed(0)) + " ft-lb";
+        } else {
+            document.getElementById("res-econ-tq").innerText = parseFloat(econ).toFixed(1) + "%";
+        }
+        // document.getElementById("res-econ-tq").innerText = parseFloat(getAlternateTorque(getBilinearInterpolation(oat, alt / 100, tableOATKeys, tableFLKeys, tableEconCruisePower), rpm)).toFixed(1);
         document.getElementById("res-econ-ff").innerText = econC[1];
         document.getElementById("res-econ-kias").innerText = econC[2];
         document.getElementById("res-econ-ktas").innerText = econC[3];
@@ -550,8 +617,7 @@ function calculateLanding(show = true) {
     let toD50 = document.getElementById("res-land-tod50");
 
     let banner = document.getElementById("ld-error");
-    if (!isNumeric(weight) || !isNumeric(alt) || !isNumeric(oat) || !isNumeric(windDir) ||
-        !isNumeric(windSpeed) || !isNumeric(course) || !isNumeric(slope)) {
+    if (!isNumeric(weight) || !isNumeric(alt) || !isNumeric(oat) || !isNumeric(windDir) || !isNumeric(windSpeed) || !isNumeric(course) || !isNumeric(slope)) {
         banner.style.display = "block";
         banner.innerText = "Error: Please verify all input values are valid numbers.";
         return;
@@ -575,12 +641,12 @@ function calculateLanding(show = true) {
     document.getElementById("res-ld-hwind").innerText = windComp[3];
 
     let data = getLandingPerformance(weight, alt, oat, windDir, windSpeed, course, slope, cond, iceMode);
-    fGR.innerText = iceMode == "Y" ? "Not Authorized" : data[0] + " ft";
-    fD50.innerText = iceMode == "Y" ? "Not Authorized" : data[1] + " ft";
-    toGR.innerText = data[2] + " ft";
-    toD50.innerText = data[3] + " ft";
-    document.getElementById("res-land-upgr").innerText = data[4] + " ft";
-    document.getElementById("res-land-upd50").innerText = data[5] + " ft";
+    fGR.innerText = iceMode === "Y" ? "Not Authorized" : formatNumber(data[0]) + " ft";
+    fD50.innerText = iceMode === "Y" ? "Not Authorized" : formatNumber(data[1]) + " ft";
+    toGR.innerText = formatNumber(data[2]) + " ft";
+    toD50.innerText = formatNumber(data[3]) + " ft";
+    document.getElementById("res-land-upgr").innerText = formatNumber(data[4]) + " ft";
+    document.getElementById("res-land-upd50").innerText = formatNumber(data[5]) + " ft";
 
     if (iceMode === "Y") {
         flapsFullHeader.innerText = "Flaps FULL (Pusher Ice Mode)";
@@ -772,7 +838,7 @@ function populateSlopePickers() {
     let options = "";
 
     for (let i = 3; i >= -3.05; i -= 0.1) {
-        if (i.toFixed(1) == 0) {
+        if (Math.abs(i.toFixed(1)) === 0.0) {
             options += `<option value="0">0</option>`;
         } else {
             options += `<option value="${i.toFixed(1)}">${i.toFixed(1)}</option>`;
@@ -786,6 +852,10 @@ function populateSlopePickers() {
             selectEl.value = "0"; // Default starting slope
         }
     });
+}
+
+function getFtLbTorque(percent) {
+    return (percent * 3708) / 100;
 }
 
 function getAlternateTorque(normTQ, newRPM) {
@@ -1025,7 +1095,7 @@ function getISAString(oat, alt) {
 function getWindComponents(windSpeed, windAngle) {
     let xwind = windSpeed * Math.sin(windAngle * (Math.PI / 180));
     let xwindString = 'No Crosswind';
-    if (Math.round(xwind) != 0) {
+    if (Math.round(xwind) !== 0) {
         let dir = xwind < 0 ? ' (Left)' : ' (Right)';
         let unit = Math.abs(Math.round(xwind)) > 1 ? ' knots' : ' knot';
         xwindString = Math.round(Math.abs(xwind)) + unit + dir;
@@ -1033,7 +1103,7 @@ function getWindComponents(windSpeed, windAngle) {
 
     let headwind = windSpeed * Math.cos(windAngle * (Math.PI / 180));
     let headwindString = 'No Headwind';
-    if (Math.round(headwind) != 0) {
+    if (Math.round(headwind) !== 0) {
         let unit = Math.abs(Math.round(headwind)) > 1 ? ' knots' : ' knot';
         headwindString = Math.round(Math.abs(headwind)) + unit;
     }
@@ -1051,7 +1121,7 @@ function getTripleLookup(table, primaryValue, secondaryValue, tertiaryValue) {
     let tempLimit = getLookupKeys(primaryValue, table);
     let lowerPrimary = tempLimit[0], higherPrimary = tempLimit[1];
 
-    if (lowerPrimary == higherPrimary) {
+    if (lowerPrimary === higherPrimary) {
         return getSubLookup(table.get(lowerPrimary), secondaryValue, tertiaryValue);
     } else {
         let lowVal = getSubLookup(table.get(lowerPrimary), secondaryValue, tertiaryValue);
@@ -1065,7 +1135,7 @@ function getSubLookup(subTable, secondaryValue, tertiaryValue) {
     let tempLimit = getLookupKeys(secondaryValue, subTable);
     let lowerSecondary = tempLimit[0], higherSecondary = tempLimit[1];
 
-    if (lowerSecondary == higherSecondary) {
+    if (lowerSecondary === higherSecondary) {
         return getTertiaryInterpolated(subTable.get(lowerSecondary), tertiaryValue);
     } else {
         let lowVal = getTertiaryInterpolated(subTable.get(lowerSecondary), tertiaryValue);
@@ -1078,7 +1148,7 @@ function getSubLookup(subTable, secondaryValue, tertiaryValue) {
 function getTertiaryInterpolated(tertiaryTable, tertiaryValue) {
     let tempLimit = getLookupKeys(tertiaryValue, tertiaryTable);
     let lowerTertiary = tempLimit[0], higherTertiary = tempLimit[1];
-    if (lowerTertiary == higherTertiary) {
+    if (lowerTertiary === higherTertiary) {
         return tertiaryTable.get(lowerTertiary);
     } else {
         let lowVal = tertiaryTable.get(lowerTertiary);
@@ -1092,7 +1162,7 @@ function getCruiseLookup(table, setting, primaryValue, secondaryValue, tertiaryV
     let tempLimit = getLookupKeys(primaryValue, table);
     let lowerPrimary = tempLimit[0], higherPrimary = tempLimit[1];
 
-    if (lowerPrimary == higherPrimary) {
+    if (lowerPrimary === higherPrimary) {
         return getCruiseSubLookup(table.get(lowerPrimary), setting, secondaryValue, tertiaryValue);
     } else {
         let lowVal = getCruiseSubLookup(table.get(lowerPrimary), setting, secondaryValue, tertiaryValue);
@@ -1106,7 +1176,7 @@ function getCruiseSubLookup(subTable, setting, secondaryValue, tertiaryValue) {
     let tempLimit = getLookupKeys(secondaryValue, subTable);
     let lowerSecondary = tempLimit[0], higherSecondary = tempLimit[1];
 
-    if (lowerSecondary == higherSecondary) {
+    if (lowerSecondary === higherSecondary) {
         return getCruiseTertiaryInterpolated(subTable.get(lowerSecondary), setting, tertiaryValue);
     } else {
         let lowVal = getCruiseTertiaryInterpolated(subTable.get(lowerSecondary), setting, tertiaryValue);
@@ -1119,7 +1189,7 @@ function getCruiseSubLookup(subTable, setting, secondaryValue, tertiaryValue) {
 function getCruiseTertiaryInterpolated(tertiaryTable, setting, tertiaryValue) {
     let tempLimit = getLookupKeys(tertiaryValue, tertiaryTable);
     let lowerTertiary = tempLimit[0], higherTertiary = tempLimit[1];
-    if (lowerTertiary == higherTertiary) {
+    if (lowerTertiary === higherTertiary) {
         return tertiaryTable.get(lowerTertiary)[setting];
     } else {
         let lowVal = tertiaryTable.get(lowerTertiary)[setting];
@@ -1130,13 +1200,20 @@ function getCruiseTertiaryInterpolated(tertiaryTable, setting, tertiaryValue) {
 }
 
 function getLookupKeys(lookupKey, lookupMap) {
+// Safely cast string inputs from the HTML form into numbers
+    const numericKey = parseFloat(lookupKey);
+
     let lowKey = 0, highKey = 0;
+
+    // Add a fallback safety check just in case lookupMap is undefined
+    if (!lookupMap) return [lowKey, highKey];
+
     for (let [key, value] of lookupMap) {
-        if (key == lookupKey) {
+        if (key === numericKey) {
             lowKey = key; highKey = key; break;
         } else {
-            if (key < lookupKey) lowKey = key;
-            if (key > lookupKey && highKey == 0) highKey = key;
+            if (key < numericKey) lowKey = key;
+            if (key > numericKey && highKey === 0) highKey = key;
         }
     }
     return [lowKey, highKey];
